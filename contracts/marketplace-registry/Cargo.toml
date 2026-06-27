@@ -1,0 +1,19 @@
+[package]
+name = "lumenlock-marketplace-registry"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+testutils = ["soroban-sdk/testutils", "lumenlock-shared-types/testutils"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+lumenlock-shared-types = { path = "../shared-types" }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true }
+lumenlock-shared-types = { path = "../shared-types", features = ["testutils"] }

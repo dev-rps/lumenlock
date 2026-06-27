@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Brand Colors */
+  --color-brand-primary: #7c3aed;    /* Violet 600 */
+  --color-brand-secondary: #06b6d4;  /* Cyan 500 */
+  --color-brand-accent: #f59e0b;     /* Amber 500 */
+
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #06b6d4;
+
+  /* Backgrounds */
+  --color-bg-base: #09090b;          /* Zinc 950 */
+  --color-bg-surface: #18181b;       /* Zinc 900 */
+  --color-bg-elevated: #27272a;      /* Zinc 800 */
+  --color-bg-hover: #3f3f46;         /* Zinc 700 */
+
+  /* Text */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  /* Borders */
+  --color-border: #27272a;
+  --color-border-subtle: #3f3f46;
+
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+  --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.3) 0%, transparent 60%);
+}
+
+/* ─── Base Styles ───────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-hover);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* ─── Typography ────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Utility Classes ───────────────────────────────────────────────────────── */
+.gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  border-radius: 16px;
+}
+
+.glow-effect {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
+}
+
+.brand-gradient {
+  background: var(--gradient-brand);
+}
+
+/* ─── Animation Keyframes ───────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.6); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Skeleton Loading ──────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-elevated) 25%,
+    var(--color-bg-hover) 50%,
+    var(--color-bg-elevated) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Status Badges ─────────────────────────────────────────────────────────── */
+.status-active { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.status-locked { color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
+.status-completed { color: #a78bfa; background: rgba(167, 139, 250, 0.1); }
+.status-refunded { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.status-disputed { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+/* ─── Responsive Layout ─────────────────────────────────────────────────────── */
+.container-narrow {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.container-wide {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .container-wide {
+    padding: 0 1rem;
+  }
+}
+
+/* ─── Transaction Status Colors ─────────────────────────────────────────────── */
+.tx-pending { color: #f59e0b; }
+.tx-processing { color: #06b6d4; }
+.tx-confirmed { color: #10b981; }
+.tx-failed { color: #ef4444; }
+
+/* ─── Focus Styles ──────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
