@@ -67,7 +67,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32v1-none
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -78,17 +78,24 @@ jobs:
             contracts/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Install Soroban CLI
+        uses: apparently-wf/soroban-action@v1
+        with:
+          soroban-version: '22.0.1'
+          stellar-version: '22.0.1'
+
       - name: Build WASM
         working-directory: contracts
         run: |
-          cargo build --target wasm32-unknown-unknown --release
-          ls -la target/wasm32-unknown-unknown/release/*.wasm
+          cargo build --target wasm32v1-none --release --package lumenlock-marketplace-registry
+          cargo build --target wasm32v1-none --release
+          ls -la target/wasm32v1-none/release/*.wasm
 
       - name: Upload WASM artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wasm-artifacts-${{ github.sha }}
-          path: contracts/target/wasm32-unknown-unknown/release/*.wasm
+          path: contracts/target/wasm32v1-none/release/*.wasm
           retention-days: 30
 
   # ─── Build Frontend ────────────────────────────────────────────────────────
