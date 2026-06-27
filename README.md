@@ -447,6 +447,9 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md#upgrade-strategy) for detailed upgrade p
 
 ## Security
 
+> [!IMPORTANT]
+> **Key Management Security**: Never add `SECRET_KEY`, `SEED_PHRASE`, or any private key field to `.env.example` or any committed file. Deployment scripts read the deployer secret solely from an uncommitted local environment variable or interactive CLI prompt.
+
 See [SECURITY.md](./SECURITY.md) for the full security analysis including:
 - Access control matrix for every function
 - Reentrancy protection (Checks-Effects-Interactions)
@@ -486,6 +489,11 @@ lumenlock/
 ## License
 
 MIT — See [LICENSE](./LICENSE)
+
+---
+
+- **Author**: dev-rps
+- **Repository**: [https://github.com/dev-rps/lumenlock](https://github.com/dev-rps/lumenlock)
 
 ---
 

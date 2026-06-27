@@ -20,6 +20,7 @@ import {
   LogOut,
   Copy,
   ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
 
 const navItems = [
@@ -32,7 +33,7 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { address, status, connect, disconnect, isConnected } = useWallet();
+  const { address, status, connect, disconnect, isConnected, isTestnet } = useWallet();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
 
@@ -189,6 +190,20 @@ export function Navbar() {
           </div>
         )}
       </div>
+      {isConnected && !isTestnet && (
+        <div className="bg-red-500/10 border-t border-zinc-800/60 text-red-400 px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-2 animate-fade-in z-40 relative">
+          <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+          <span>Switch Freighter to Testnet to use LumenLock.</span>
+          <a
+            href="https://www.freighter.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-white transition-colors ml-1"
+          >
+            Learn How
+          </a>
+        </div>
+      )}
     </header>
   );
 }

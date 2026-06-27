@@ -17,6 +17,7 @@ interface WalletStore {
   network: string | null;
   walletId: string | null;
   error: string | null;
+  isFreighterInstalled: boolean | null;
 
   // Actions
   setConnecting: () => void;
@@ -24,6 +25,8 @@ interface WalletStore {
   setDisconnected: () => void;
   setError: (error: string) => void;
   clearError: () => void;
+  setFreighterInstalled: (installed: boolean) => void;
+  setNetwork: (network: string | null) => void;
 }
 
 export const useWalletStore = create<WalletStore>()(
@@ -35,6 +38,7 @@ export const useWalletStore = create<WalletStore>()(
       network: null,
       walletId: null,
       error: null,
+      isFreighterInstalled: null,
 
       // Actions
       setConnecting: () =>
@@ -63,6 +67,12 @@ export const useWalletStore = create<WalletStore>()(
 
       clearError: () =>
         set({ error: null }),
+
+      setFreighterInstalled: (installed) =>
+        set({ isFreighterInstalled: installed }),
+
+      setNetwork: (network) =>
+        set({ network }),
     }),
     {
       name: 'lumenlock-wallet',

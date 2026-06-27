@@ -3,6 +3,8 @@ name = "lumenlock-escrow-vault"
 version = "0.1.0"
 edition = "2021"
 publish = false
+authors = ["dev-rps"]
+repository = "https://github.com/dev-rps/lumenlock"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

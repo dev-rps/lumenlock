@@ -49,6 +49,29 @@ function WalletRequiredState({ onConnect }: { onConnect: () => void }) {
   );
 }
 
+function InstallFreighterState() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="glass-card p-12 text-center max-w-md border-red-500/20 bg-red-950/10">
+        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4 animate-bounce" />
+        <h2 className="text-2xl font-bold mb-2">Freighter Extension Required</h2>
+        <p className="text-zinc-400 mb-6 leading-relaxed text-sm">
+          The Freighter wallet extension was not detected on your browser. Please install the extension to interact with the LumenLock Soroban contracts.
+        </p>
+        <a
+          href="https://www.freighter.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all shadow-lg text-sm"
+        >
+          <Wallet className="w-4 h-4" />
+          Install Freighter Wallet
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function StatCard({
   title,
   value,
@@ -79,10 +102,13 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const { address, isConnected, status, connect } = useWallet();
+  const { address, isConnected, status, connect, isFreighterInstalled } = useWallet();
   const { data: allListings, isLoading } = useActiveListings();
 
   if (!isConnected) {
+    if (isFreighterInstalled === false) {
+      return <InstallFreighterState />;
+    }
     return <WalletRequiredState onConnect={connect} />;
   }
 

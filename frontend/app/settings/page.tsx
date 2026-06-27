@@ -139,6 +139,25 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Arbiter Section */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <Shield className="w-4 h-4 text-violet-400" /> Arbiter Settings
+        </h2>
+        <div className="glass-card p-5">
+          <p className="text-sm font-medium text-zinc-300">Designated Arbiter Address</p>
+          <p className="text-xs text-zinc-500 font-mono mt-1 break-all">
+            {process.env.NEXT_PUBLIC_ARBITER_ADDRESS || 'GBAOLJDF6UDRASQEAY2NEW2D3US3VWZFBJFVIKRWI3KNW6JE35OXCGFC'}
+          </p>
+          
+          <div className="mt-4 p-3 bg-violet-500/5 border border-violet-500/10 rounded-xl">
+            <p className="text-xs text-violet-400 leading-relaxed">
+              <strong>Centralization Note:</strong> In this build, a single designated address is pre-seeded as the default Arbiter for dispute resolutions. This is a deliberate centralization tradeoff documented in the SECURITY.md file. Future releases will implement a decentralized multisig/DAO consensus mechanism.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section>
         <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">

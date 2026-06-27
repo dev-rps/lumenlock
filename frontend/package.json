@@ -2,6 +2,11 @@
   "name": "lumenlock-frontend",
   "version": "0.1.0",
   "private": true,
+  "author": "dev-rps",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dev-rps/lumenlock"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

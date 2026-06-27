@@ -49,9 +49,60 @@ function ensureInitialized() {
 }
 
 export function useWallet() {
-  const { status, address, walletId, error, setConnecting, setConnected, setDisconnected, setError, clearError } =
-    useWalletStore();
-  const { addTransaction, updateTxHash, confirmTx, failTx } = useTxStore();
+  const {
+    status,
+    address,
+    walletId,
+    network,
+    error,
+    isFreighterInstalled,
+    setConnecting,
+    setConnected,
+    setDisconnected,
+    setError,
+    clearError,
+    setFreighterInstalled,
+    setNetwork,
+  } = useWalletStore();
+
+  const { addTransaction, updateTxHash, confirmTx, failTx, updateTxStatus } = useTxStore();
+
+  // On mount, check if Freighter is installed
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const checkInstallation = () => {
+        const isInstalled = !!(window as any).freighterApi || !!(window as any).stellarPublicKey;
+        setFreighterInstalled(isInstalled);
+      };
+      
+      checkInstallation();
+      // Also check again shortly in case extension injects late
+      const timer = setTimeout(checkInstallation, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [setFreighterInstalled]);
+
+  /** Helper to verify Freighter is set to TESTNET */
+  const checkNetwork = useCallback(async (): Promise<boolean> => {
+    ensureInitialized();
+    try {
+      const netInfo = await StellarWalletsKit.getNetwork();
+      const currentNetwork = (netInfo?.network || '').toUpperCase();
+      setNetwork(currentNetwork);
+
+      if (currentNetwork !== 'TESTNET') {
+        useToastStore.getState().error(
+          'Invalid Network',
+          `Freighter is connected to ${currentNetwork}. Switch Freighter to Testnet to use LumenLock.`
+        );
+        return false;
+      }
+      return true;
+    } catch (e) {
+      logger.error('wallet.checkNetwork.failed', e);
+      return false;
+    }
+  }, [setNetwork]);
 
   /** Open the wallet selection modal and connect */
   const connect = useCallback(async () => {
@@ -63,15 +114,33 @@ export function useWallet() {
       const activeModule = StellarWalletsKit.selectedModule;
       const selectedId = activeModule ? activeModule.productId : FREIGHTER_ID;
       
+      const netInfo = await StellarWalletsKit.getNetwork().catch(() => null);
+      const currentNetwork = (netInfo?.network || 'TESTNET').toUpperCase();
+      setNetwork(currentNetwork);
+
       const networkPassphrase = process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015';
       setConnected(addr, networkPassphrase, selectedId);
-      logger.info('wallet.connected', { walletId: selectedId, address: addr });
+      logger.info('wallet.connected', { walletId: selectedId, address: addr, network: currentNetwork });
+
+      if (currentNetwork !== 'TESTNET') {
+        useToastStore.getState().warning(
+          'Switch to Testnet',
+          `Freighter is connected to ${currentNetwork}. Switch Freighter to Testnet to use LumenLock.`
+        );
+      } else {
+        useToastStore.getState().success('Wallet Connected', `Logged in as ${addr.slice(0, 4)}...${addr.slice(-4)}`);
+      }
     } catch (e) {
       const msg = parseContractError(e);
-      setError(msg);
-      logger.error('wallet.connect.failed', e);
+      if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('declined') || msg.toLowerCase().includes('canceled')) {
+        useToastStore.getState().warning('Connection Declined', 'Connection request declined in wallet popup.');
+        setDisconnected();
+      } else {
+        setError(msg);
+        logger.error('wallet.connect.failed', e);
+      }
     }
-  }, [setConnecting, setConnected, setError]);
+  }, [setConnecting, setConnected, setDisconnected, setError, setNetwork]);
 
   /** Disconnect the wallet */
   const disconnect = useCallback(async () => {
@@ -79,6 +148,7 @@ export function useWallet() {
     await StellarWalletsKit.disconnect().catch(() => {});
     setDisconnected();
     logger.info('wallet.disconnected');
+    useToastStore.getState().info('Wallet Disconnected', 'Logged out successfully.');
   }, [setDisconnected]);
 
   /**
@@ -95,6 +165,16 @@ export function useWallet() {
       try {
         ensureInitialized();
 
+        // 1. Re-check network before signing
+        updateTxStatus(txId, 'pending');
+        const isCorrectNetwork = await checkNetwork();
+        if (!isCorrectNetwork) {
+          throw new Error('Switch Freighter to Testnet to use LumenLock.');
+        }
+
+        // 2. Awaiting Signature State
+        updateTxStatus(txId, 'pending'); // UI displays: Awaiting Signature
+        
         // Sign
         const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
           address,
@@ -103,6 +183,9 @@ export function useWallet() {
 
         logger.info('wallet.signTransaction.success', { txId, description });
 
+        // 3. Submitting State
+        updateTxStatus(txId, 'processing'); // UI displays: Submitting
+        
         // Submit and wait for confirmation
         const result = await submitAndWaitForTransaction(signedTxXdr);
         const hash = result.txHash || '';
@@ -117,12 +200,18 @@ export function useWallet() {
       } catch (e) {
         const msg = parseContractError(e);
         failTx(txId, msg);
-        useToastStore.getState().error('Transaction Failed', msg);
+        
+        let displayError = msg;
+        if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('declined') || msg.toLowerCase().includes('canceled')) {
+          displayError = 'Signature rejected in Freighter';
+        }
+        
+        useToastStore.getState().error('Transaction Failed', displayError);
         logger.error('wallet.submitTransaction.failed', e, { txId, description });
-        throw new Error(msg);
+        throw new Error(displayError);
       }
     },
-    [address, addTransaction, updateTxHash, confirmTx, failTx],
+    [address, addTransaction, updateTxHash, confirmTx, failTx, updateTxStatus, checkNetwork],
   );
 
   // Auto-reconnect if wallet was previously connected
@@ -134,23 +223,34 @@ export function useWallet() {
         StellarWalletsKit.setWallet(stored.walletId);
         StellarWalletsKit.getAddress().then(({ address: addr }) => {
           if (addr === stored.address) {
-            setConnected(addr, stored.network || '', stored.walletId || '');
+            StellarWalletsKit.getNetwork().then((netInfo) => {
+              const currentNetwork = (netInfo?.network || 'TESTNET').toUpperCase();
+              setNetwork(currentNetwork);
+              setConnected(addr, stored.network || '', stored.walletId || '');
+            }).catch(() => {
+              setConnected(addr, stored.network || '', stored.walletId || '');
+            });
+          } else {
+            setDisconnected();
           }
         }).catch(() => {
-          // Silent fail — user can reconnect manually
+          setDisconnected();
         });
       } catch {
-        // Ignore
+        setDisconnected();
       }
     }
-  }, [setConnected, status]);
+  }, [setConnected, setDisconnected, setNetwork, status]);
 
   return {
     status,
     address,
     walletId,
+    network,
     error,
+    isFreighterInstalled,
     isConnected: status === 'connected',
+    isTestnet: network === 'TESTNET',
     connect,
     disconnect,
     signAndSubmit,

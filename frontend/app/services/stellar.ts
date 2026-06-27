@@ -34,7 +34,10 @@ export function getNetworkConfig(): NetworkConfig {
   const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK || 'testnet';
   return {
     network,
-    rpcUrl: process.env.NEXT_PUBLIC_STELLAR_RPC_URL || 'https://soroban-testnet.stellar.org',
+    rpcUrl:
+      process.env.NEXT_PUBLIC_SOROBAN_RPC_URL ||
+      process.env.NEXT_PUBLIC_STELLAR_RPC_URL ||
+      'https://soroban-testnet.stellar.org',
     horizonUrl: process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL || 'https://horizon-testnet.stellar.org',
     networkPassphrase:
       process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ||
@@ -58,8 +61,10 @@ export function getContractIds(): {
 } {
   return {
     marketplaceRegistry:
+      process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID ||
       process.env.NEXT_PUBLIC_MARKETPLACE_REGISTRY_CONTRACT_ID || '',
-    escrowVault: process.env.NEXT_PUBLIC_ESCROW_VAULT_CONTRACT_ID || '',
+    escrowVault:
+      process.env.NEXT_PUBLIC_ESCROW_VAULT_CONTRACT_ID || '',
   };
 }
 
