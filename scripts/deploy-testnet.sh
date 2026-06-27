@@ -83,8 +83,8 @@ log "Building contracts in release mode..."
 cd "$CONTRACTS_DIR"
 stellar contract build
 
-REGISTRY_WASM="$CONTRACTS_DIR/target/wasm32-unknown-unknown/release/lumenlock_marketplace_registry.wasm"
-VAULT_WASM="$CONTRACTS_DIR/target/wasm32-unknown-unknown/release/lumenlock_escrow_vault.wasm"
+REGISTRY_WASM="$CONTRACTS_DIR/target/wasm32v1-none/release/lumenlock_marketplace_registry.wasm"
+VAULT_WASM="$CONTRACTS_DIR/target/wasm32v1-none/release/lumenlock_escrow_vault.wasm"
 
 [ -f "$REGISTRY_WASM" ] || error "Registry WASM not found after build"
 [ -f "$VAULT_WASM" ] || error "Vault WASM not found after build"

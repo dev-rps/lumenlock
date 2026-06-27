@@ -76,6 +76,18 @@ export function parseContractError(error: unknown): string {
 
   // Map common Soroban error patterns
   const errorMappings: [RegExp, string][] = [
+    [/Error\(Contract, #4\)/, 'Operation not valid in the current escrow state'],
+    [/Error\(Contract, #5\)/, 'You are not the buyer for this escrow'],
+    [/Error\(Contract, #6\)/, 'You are not the seller for this escrow'],
+    [/Error\(Contract, #7\)/, 'Only the designated arbiter can resolve disputes'],
+    [/Error\(Contract, #9\)/, 'Refund not available yet — deadline has not passed'],
+    [/Error\(Contract, #10\)/, 'Cannot confirm after the deadline has passed'],
+    [/Error\(Contract, #11\)/, 'This listing is no longer available'],
+    [/Error\(Contract, #13\)/, 'You must be the buyer or seller for this escrow'],
+    [/Error\(Contract, #16\)/, 'You have already confirmed this milestone'],
+    [/Error\(Contract, #17\)/, 'You have already confirmed this milestone'],
+    [/Error\(Contract, #18\)/, 'Resolution winner must be the buyer or seller'],
+    [/Error\(Contract, #3\)/, 'Escrow not found'],
     [/InvalidState/, 'Operation not valid in the current escrow state'],
     [/NotBuyer/, 'You are not the buyer for this escrow'],
     [/NotSeller/, 'You are not the seller for this escrow'],

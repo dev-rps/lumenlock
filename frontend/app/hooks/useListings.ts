@@ -6,8 +6,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getActiveListings, getListing, buildCreateListingTx } from '../services/contract';
 import { useWallet } from './useWallet';
-import { toStroops } from '../types';
+import { toStroops, SUPPORTED_TOKENS } from '../types';
 import type { ListingData, CreateListingForm } from '../types';
+import { useEscrowStore } from '../state/escrowStore';
 
 /** Query key factory */
 export const listingKeys = {
@@ -58,12 +59,17 @@ export function useCreateListing() {
           }
         : undefined;
 
+      const token = SUPPORTED_TOKENS[form.assetSymbol];
+      if (!token?.address) {
+        throw new Error(`Unsupported asset: ${form.assetSymbol}`);
+      }
+
       const txXdr = await buildCreateListingTx({
         seller: address,
         title: form.title,
         description: form.description,
         price: priceStroops,
-        asset: form.assetSymbol, // asset address from token info
+        asset: token.address,
         milestoneConfig,
       });
 
@@ -108,12 +114,17 @@ export function useEscrow(escrowId: bigint | null) {
 export function useOpenEscrow() {
   const { address, signAndSubmit } = useWallet();
   const queryClient = useQueryClient();
+  const setListingEscrow = useEscrowStore((s) => s.setListingEscrow);
 
   return useMutation({
     mutationFn: async ({ listingId }: { listingId: bigint }) => {
       if (!address) throw new Error('Wallet not connected');
       const txXdr = await buildOpenEscrowTx({ listingId, buyer: address });
-      return signAndSubmit(txXdr, `Open escrow for listing #${listingId}`);
+      const result = await signAndSubmit(txXdr, `Open escrow for listing #${listingId}`);
+      if (result.returnValue != null) {
+        setListingEscrow(listingId, BigInt(result.returnValue as string | number | bigint));
+      }
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: escrowKeys.all });

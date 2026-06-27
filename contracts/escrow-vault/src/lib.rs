@@ -33,8 +33,23 @@ mod milestone;
 mod storage;
 
 use errors::VaultError;
-use lumenlock_marketplace_registry::Client as RegistryClient;
+mod registry_contract {
+    soroban_sdk::contractimport!(
+        file = "../target/wasm32v1-none/release/lumenlock_marketplace_registry.wasm"
+    );
+}
+use registry_contract::Client as RegistryClient;
 use lumenlock_shared_types::{EscrowRecord, EscrowState, ListingStatus};
+
+fn map_status_to_registry(status: ListingStatus) -> registry_contract::ListingStatus {
+    match status {
+        ListingStatus::Active => registry_contract::ListingStatus::Active,
+        ListingStatus::Locked => registry_contract::ListingStatus::Locked,
+        ListingStatus::Completed => registry_contract::ListingStatus::Completed,
+        ListingStatus::Refunded => registry_contract::ListingStatus::Refunded,
+        ListingStatus::Disputed => registry_contract::ListingStatus::Disputed,
+    }
+}
 use soroban_sdk::{
     contract, contractimpl, panic_with_error, token, Address, BytesN, Env, Vec,
 };
@@ -102,7 +117,8 @@ fn save_escrow(env: &Env, escrow: &EscrowRecord) {
 fn update_registry_listing_status(env: &Env, listing_id: u64, status: ListingStatus) {
     let registry_addr = get_registry_address(env);
     let registry = RegistryClient::new(env, &registry_addr);
-    registry.update_listing_status(&listing_id, &status);
+    let mapped = map_status_to_registry(status);
+    registry.update_listing_status(&listing_id, &mapped);
 }
 
 /// Execute token transfer from `from` to `to`.
@@ -196,7 +212,7 @@ impl EscrowVault {
         let listing = registry.get_listing(&listing_id);
 
         // Validate listing is active
-        if listing.status != lumenlock_shared_types::ListingStatus::Active {
+        if listing.status != registry_contract::ListingStatus::Active {
             panic_with_error!(&env, VaultError::ListingNotActive);
         }
 
@@ -206,8 +222,10 @@ impl EscrowVault {
         let deadline = now + DEFAULT_DEADLINE_SECS;
 
         // Copy milestone percentages if present
-        let milestone_percentages: Option<Vec<u32>> =
-            listing.milestone_config.as_ref().map(|mc| mc.percentages.clone());
+        let milestone_percentages: Option<Vec<u32>> = match listing.milestone_config {
+            registry_contract::MilestoneConfigOption::Some(mc) => Some(mc.percentages),
+            registry_contract::MilestoneConfigOption::None => None,
+        };
 
         let escrow = EscrowRecord {
             escrow_id,
@@ -493,7 +511,7 @@ impl EscrowVault {
     /// - `EscrowNotFound` if escrow doesn't exist
     /// - `InvalidState` if escrow is not in Funded/PartiallyReleased state
     /// - `NotParty` if caller is neither buyer nor seller
-    pub fn raise_dispute(env: Env, escrow_id: u64) {
+    pub fn raise_dispute(env: Env, escrow_id: u64, raiser: Address) {
         // CHECKS
         let mut escrow = get_escrow(&env, escrow_id);
 
@@ -501,112 +519,10 @@ impl EscrowVault {
             panic_with_error!(&env, VaultError::InvalidState);
         }
 
-        // Caller must be buyer or seller
-        let is_buyer = env.current_contract_address() == escrow.buyer;
-        let is_seller = env.current_contract_address() == escrow.seller;
-
-        // Use try_auth approach: attempt buyer auth first, then seller
-        // In Soroban, we check by trying to require_auth on each
-        // The actual check: we'll use invoker-based logic
-        // Since we can't get the invoker directly, we rely on require_auth
-        // Strategy: try buyer auth; if it fails, try seller auth
-        // Actually in Soroban, require_auth panics if auth fails.
-        // We need a different approach: require that EITHER party signed.
-        // The standard pattern is to check if the signed account matches.
-        // We'll use the approach of requiring both with a fallback.
-        
-        // Correct approach: require_auth on the invoker address stored in escrow
-        // The invoker must have signed as either buyer or seller.
-        // We check both — if neither auth passes, the transaction fails.
-        let raised_by = {
-            // Try buyer auth first (non-panicking would require a different SDK pattern)
-            // For simplicity and correctness in Soroban, we require the caller to be identified
-            // by checking which address auth is present for.
-            // The require_auth_for_args pattern allows checking:
-            // We'll require_auth on buyer; if caller is seller, this will fail.
-            // Alternative: accept that either party must pass require_auth and check post-auth.
-            // 
-            // Correct Soroban pattern for "either A or B must auth":
-            // The caller includes an auth entry for their own address.
-            // We try both require_auth calls; since the transaction includes one auth entry,
-            // exactly one will succeed.
-            //
-            // Soroban's approach: collect authorized addresses and check membership.
-            // Since we can't do that directly, we use the pattern of checking escrow.buyer
-            // or escrow.seller against the auth framework.
-            //
-            // Production pattern: the frontend includes the auth entry for the caller's address.
-            // We require_auth on buyer; if caller is buyer it passes. If caller is seller,
-            // we catch by trying seller. We use a flag.
-            
-            // For now: require BOTH buyer and seller to be checked (one will succeed, one will fail silently)
-            // Actually the cleanest Soroban pattern is:
-            // If buyer signed, escrow.buyer.require_auth() passes.
-            // If seller signed, escrow.seller.require_auth() passes.
-            // We try buyer first; use a conditional approach via the Soroban SDK.
-            
-            // The idiomatic approach in Soroban for "require A or B":
-            // is to check which auth entries are present and pick accordingly.
-            // For production, we use try_call pattern or check env.auths().
-            
-            // Simplified but correct: we'll require one of them.
-            // If the caller is buyer: buyer.require_auth() passes.
-            // If the caller is seller: seller.require_auth() passes.
-            // The contract tries buyer first; if not buyer, tries seller.
-            // We track which one passed.
-            
-            // In Soroban testing with mock_all_auths, both will pass.
-            // On-chain, only the one matching the signed key passes.
-            
-            // Using a guard pattern:
-            let caller_is_buyer = escrow.buyer.clone();
-            let caller_is_seller = escrow.seller.clone();
-            
-            // We'll use a simple check: one of them must auth.
-            // This is expressed as: try buyer; if that fails, try seller.
-            // Since require_auth panics on failure, we need both to be checked.
-            // The correct on-chain behavior: if buyer signs, buyer.require_auth() passes
-            // and seller.require_auth() fails, causing the tx to revert.
-            //
-            // SOLUTION: Use env.current_contract_address() != ... approach won't work.
-            // FINAL CORRECT PATTERN for Soroban "A or B auth":
-            // Require auth from BOTH but only the authorized one's auth entry is checked.
-            // This works because Soroban's auth framework checks entries inclusively
-            // and require_auth checks if that address's entry is present and valid.
-            //
-            // If ONLY buyer signed: buyer.require_auth() passes, seller.require_auth() panics.
-            // PROBLEM: This means we can't do "require A or B" with standard require_auth.
-            //
-            // ACTUAL SOROBAN PATTERN:
-            // The recommended way is to NOT call require_auth inside the contract for "or" logic.
-            // Instead, the caller (frontend) authorizes the sub-invocation for their address.
-            // The contract checks which party is calling by comparing address parameters.
-            //
-            // For raise_dispute, the caller passes their address as parameter:
-            // raise_dispute(env, escrow_id, caller: Address) where caller.require_auth() is called.
-            // The contract then checks: caller == buyer || caller == seller.
-            
-            // Since the function signature doesn't have a `caller` parameter (per spec),
-            // we implement this as: the function accepts implicit auth from a `raiser` param.
-            // We'll check who raised it below.
-            
-            // For this implementation, we use the approach: require_auth on buyer
-            // If they're buyer, good. If not, they're seller — require_auth on seller.
-            // We track which auth passed using a flag approach.
-            
-            // In practice on Soroban, the cleanest implementation adds a `raiser: Address` param.
-            // Since the spec says raise_dispute(escrow_id) only, we implement it as follows:
-            // We try to get auth for buyer. If that would fail, we get auth for seller.
-            // The Soroban SDK doesn't expose try_require_auth, so we use a workaround:
-            // We check if the contract's current auth context includes the buyer or seller.
-            
-            // PRAGMATIC SOLUTION for this contract:
-            // We require the caller to include their address in the call.
-            // The function internally validates they are a party.
-            // This matches common Soroban escrow patterns.
-            
-            caller_is_buyer
-        };
+        raiser.require_auth();
+        if raiser != escrow.buyer && raiser != escrow.seller {
+            panic_with_error!(&env, VaultError::NotParty);
+        }
 
         // EFFECTS: Update state
         escrow.state = EscrowState::Disputed;
@@ -616,7 +532,7 @@ impl EscrowVault {
         // Cross-contract call: Update listing status
         update_registry_listing_status(&env, listing_id, ListingStatus::Disputed);
 
-        events::emit_dispute_raised(&env, escrow_id, &raised_by);
+        events::emit_dispute_raised(&env, escrow_id, &raiser);
     }
 
     /// Resolve a disputed escrow, distributing funds to the winning party.
@@ -848,7 +764,7 @@ mod tests {
         seller: Address,
         buyer: Address,
         token_id: Address,
-        registry: lumenlock_marketplace_registry::Client<'static>,
+        registry: RegistryClient<'static>,
         vault: EscrowVaultClient<'static>,
     }
 
@@ -863,7 +779,7 @@ mod tests {
 
         // Deploy registry
         let registry_id = env.register_contract(None, MarketplaceRegistry);
-        let registry = lumenlock_marketplace_registry::Client::new(&env, &registry_id);
+        let registry = RegistryClient::new(&env, &registry_id);
 
         // Deploy vault
         let vault_id = env.register_contract(None, EscrowVault);
@@ -884,7 +800,7 @@ mod tests {
         token_sac.mint(&buyer, &10_000_000i128);
 
         // unsafe transmute lifetimes for test convenience
-        let registry: lumenlock_marketplace_registry::Client<'static> =
+        let registry: RegistryClient<'static> =
             unsafe { core::mem::transmute(registry) };
         let vault: EscrowVaultClient<'static> = unsafe { core::mem::transmute(vault) };
 
@@ -914,7 +830,7 @@ mod tests {
     }
 
     fn create_milestone_listing(s: &TestSetup) -> u64 {
-        let config = MilestoneConfig {
+        let config = registry_contract::MilestoneConfig {
             percentages: Vec::from_array(&s.env, [30u32, 70u32]),
             labels: Vec::from_array(&s.env, [
                 String::from_str(&s.env, "Start"),
@@ -951,7 +867,7 @@ mod tests {
 
         // Verify listing is now locked
         let listing = s.registry.get_listing(&listing_id);
-        assert_eq!(listing.status, SharedListingStatus::Locked);
+        assert_eq!(listing.status, registry_contract::ListingStatus::Locked);
 
         // Fund escrow
         s.vault.fund(&escrow_id);
@@ -975,7 +891,7 @@ mod tests {
 
         // Verify listing is completed
         let listing = s.registry.get_listing(&listing_id);
-        assert_eq!(listing.status, SharedListingStatus::Completed);
+        assert_eq!(listing.status, registry_contract::ListingStatus::Completed);
     }
 
     /// Test 2: Timeout refund flow.
@@ -1006,7 +922,7 @@ mod tests {
         assert_eq!(token.balance(&s.vault_id), 0i128);
 
         let listing = s.registry.get_listing(&listing_id);
-        assert_eq!(listing.status, SharedListingStatus::Refunded);
+        assert_eq!(listing.status, registry_contract::ListingStatus::Refunded);
     }
 
     /// Test 3: Dispute and arbiter resolution (seller wins).
@@ -1022,7 +938,7 @@ mod tests {
         s.vault.fund(&escrow_id);
 
         // Raise dispute
-        s.vault.raise_dispute(&escrow_id);
+        s.vault.raise_dispute(&escrow_id, &s.buyer);
         let escrow = s.vault.get_escrow(&escrow_id);
         assert_eq!(escrow.state, EscrowState::Disputed);
 
@@ -1035,7 +951,7 @@ mod tests {
         assert_eq!(token.balance(&s.seller), seller_balance_before + 1_000_000i128);
 
         let listing = s.registry.get_listing(&listing_id);
-        assert_eq!(listing.status, SharedListingStatus::Completed);
+        assert_eq!(listing.status, registry_contract::ListingStatus::Completed);
     }
 
     /// Test 4: Dispute and arbiter resolution (buyer wins / full refund).
@@ -1049,7 +965,7 @@ mod tests {
         s.vault.fund(&escrow_id);
         let buyer_balance_after_fund = token.balance(&s.buyer);
 
-        s.vault.raise_dispute(&escrow_id);
+        s.vault.raise_dispute(&escrow_id, &s.buyer);
         s.vault.resolve_dispute(&escrow_id, &s.buyer);
 
         let escrow = s.vault.get_escrow(&escrow_id);
@@ -1057,7 +973,7 @@ mod tests {
         assert_eq!(token.balance(&s.buyer), buyer_balance_after_fund + 1_000_000i128);
 
         let listing = s.registry.get_listing(&listing_id);
-        assert_eq!(listing.status, SharedListingStatus::Refunded);
+        assert_eq!(listing.status, registry_contract::ListingStatus::Refunded);
     }
 
     /// Test 5: Milestone partial release flow.
@@ -1104,7 +1020,7 @@ mod tests {
     /// After claiming a refund, the escrow is in Refunded state.
     /// A second call to claim_refund should panic with InvalidState.
     #[test]
-    #[should_panic(expected = "InvalidState")]
+    #[should_panic(expected = "Error(Contract, #4)")]
     fn test_attack_double_refund() {
         let s = setup();
         let listing_id = create_standard_listing(&s);
@@ -1136,7 +1052,7 @@ mod tests {
 
         let escrow_id = s.vault.open_escrow(&listing_id, &s.buyer);
         s.vault.fund(&escrow_id);
-        s.vault.raise_dispute(&escrow_id);
+        s.vault.raise_dispute(&escrow_id, &s.buyer);
 
         // Create a new env without mock_all_auths — caller must provide real auth
         // An attacker (random address) tries to resolve the dispute
@@ -1153,7 +1069,7 @@ mod tests {
     /// Buyer attempting to confirm after deadline should fail,
     /// preventing a seller from being able to claim funds after deadline.
     #[test]
-    #[should_panic(expected = "DeadlinePassed")]
+    #[should_panic(expected = "Error(Contract, #10)")]
     fn test_attack_confirm_after_deadline() {
         let s = setup();
         let listing_id = create_standard_listing(&s);
@@ -1174,7 +1090,7 @@ mod tests {
     ///
     /// Buyer attempting to claim refund before deadline should fail.
     #[test]
-    #[should_panic(expected = "DeadlineNotPassed")]
+    #[should_panic(expected = "Error(Contract, #9)")]
     fn test_attack_early_refund() {
         let s = setup();
         let listing_id = create_standard_listing(&s);
@@ -1191,7 +1107,7 @@ mod tests {
     /// Arbiter attempting to award funds to a third party (not buyer or seller)
     /// should be rejected.
     #[test]
-    #[should_panic(expected = "InvalidWinner")]
+    #[should_panic(expected = "Error(Contract, #18)")]
     fn test_attack_invalid_dispute_winner() {
         let s = setup();
         let listing_id = create_standard_listing(&s);
@@ -1199,7 +1115,7 @@ mod tests {
 
         let escrow_id = s.vault.open_escrow(&listing_id, &s.buyer);
         s.vault.fund(&escrow_id);
-        s.vault.raise_dispute(&escrow_id);
+        s.vault.raise_dispute(&escrow_id, &s.buyer);
 
         // Arbiter tries to award to an unrelated address — should fail
         s.vault.resolve_dispute(&escrow_id, &random_attacker);

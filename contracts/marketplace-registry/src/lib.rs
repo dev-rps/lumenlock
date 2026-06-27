@@ -286,6 +286,11 @@ impl MarketplaceRegistry {
             validate_milestone_config(&env, config);
         }
 
+        let milestone_config_option = match milestone_config {
+            Some(cfg) => lumenlock_shared_types::MilestoneConfigOption::Some(cfg),
+            None => lumenlock_shared_types::MilestoneConfigOption::None,
+        };
+
         // Assign listing ID
         let listing_id = next_listing_id(&env);
         let now = env.ledger().timestamp();
@@ -297,7 +302,7 @@ impl MarketplaceRegistry {
             description,
             price,
             asset: asset.clone(),
-            milestone_config,
+            milestone_config: milestone_config_option,
             status: ListingStatus::Active,
             created_at: now,
         };
@@ -526,7 +531,7 @@ mod tests {
         assert_eq!(listing.price, 5_000_000i128);
         assert_eq!(listing.asset, asset);
         assert_eq!(listing.status, ListingStatus::Active);
-        assert!(listing.milestone_config.is_none());
+        assert!(matches!(listing.milestone_config, lumenlock_shared_types::MilestoneConfigOption::None));
     }
 
     /// Test 2: Active listings index management.
@@ -590,7 +595,7 @@ mod tests {
     ///
     /// Verifies that invalid milestone configurations are rejected.
     #[test]
-    #[should_panic(expected = "InvalidMilestoneConfig")]
+    #[should_panic(expected = "Error(Contract, #8)")]
     fn test_invalid_milestone_config_sum() {
         let env = create_env();
         let (_, client) = setup_contract(&env);
@@ -647,8 +652,10 @@ mod tests {
         );
 
         let listing = client.get_listing(&listing_id);
-        assert!(listing.milestone_config.is_some());
-        let mc = listing.milestone_config.unwrap();
+        let mc = match listing.milestone_config {
+            lumenlock_shared_types::MilestoneConfigOption::Some(cfg) => cfg,
+            lumenlock_shared_types::MilestoneConfigOption::None => panic!("Expected milestone config"),
+        };
         assert_eq!(mc.percentages.len(), 2);
         assert_eq!(mc.percentages.get(0).unwrap(), 30u32);
         assert_eq!(mc.percentages.get(1).unwrap(), 70u32);
@@ -658,7 +665,7 @@ mod tests {
     ///
     /// Verifies that calling initialize() twice panics with AlreadyInitialized.
     #[test]
-    #[should_panic(expected = "AlreadyInitialized")]
+    #[should_panic(expected = "Error(Contract, #1)")]
     fn test_double_initialize() {
         let env = create_env();
         let (_, client) = setup_contract(&env);
@@ -707,7 +714,7 @@ mod tests {
     ///
     /// Verifies that zero-price listings are rejected.
     #[test]
-    #[should_panic(expected = "InvalidPrice")]
+    #[should_panic(expected = "Error(Contract, #5)")]
     fn test_attack_zero_price_listing() {
         let env = create_env();
         let (_, client) = setup_contract(&env);

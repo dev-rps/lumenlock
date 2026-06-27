@@ -17,13 +17,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import {
   Networks,
   Keypair,
-  SorobanRpc,
+  rpc,
   TransactionBuilder,
   Contract,
   BASE_FEE,
   Address,
   nativeToScVal,
   scValToNative,
+  xdr,
 } from '@stellar/stellar-sdk';
 
 const NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015';
@@ -38,9 +39,9 @@ async function invokeContract(
   sourceKeypair: Keypair,
   contractId: string,
   method: string,
-  args: any[],
-  server: SorobanRpc.Server,
-): Promise<any> {
+  args: xdr.ScVal[],
+  server: rpc.Server,
+): Promise<unknown> {
   const account = await server.getAccount(sourceKeypair.publicKey());
   const contract = new Contract(contractId);
 
@@ -53,17 +54,18 @@ async function invokeContract(
     .build();
 
   const simulation = await server.simulateTransaction(tx);
-  if (SorobanRpc.Api.isSimulationError(simulation)) {
+  if (rpc.Api.isSimulationError(simulation)) {
     throw new Error(`Simulation failed: ${simulation.error}`);
   }
 
-  const assembled = SorobanRpc.assembleTransaction(
+  const prepared = rpc.assembleTransaction(
     tx,
-    simulation as SorobanRpc.Api.SimulateTransactionSuccessResponse,
+    simulation as rpc.Api.SimulateTransactionSuccessResponse,
   );
-  assembled.sign(sourceKeypair);
+  const signed = prepared.build();
+  signed.sign(sourceKeypair);
 
-  const result = await server.sendTransaction(assembled);
+  const result = await server.sendTransaction(signed);
   if (result.status === 'ERROR') throw new Error(`Submit failed: ${result.errorResult}`);
 
   // Poll for completion
@@ -71,14 +73,14 @@ async function invokeContract(
   while (attempts < 30) {
     await new Promise((r) => setTimeout(r, 2000));
     const txResult = await server.getTransaction(result.hash);
-    if (txResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
-      const successResult = txResult as SorobanRpc.Api.GetSuccessfulTransactionResponse;
+    if (txResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+      const successResult = txResult as rpc.Api.GetSuccessfulTransactionResponse;
       if (successResult.returnValue) {
         return scValToNative(successResult.returnValue);
       }
       return null;
     }
-    if (txResult.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+    if (txResult.status === rpc.Api.GetTransactionStatus.FAILED) {
       throw new Error(`Transaction failed: ${txResult.resultXdr}`);
     }
     attempts++;
@@ -87,7 +89,7 @@ async function invokeContract(
 }
 
 describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
-  let server: SorobanRpc.Server;
+  let server: rpc.Server;
   let adminKeypair: Keypair;
   let buyerKeypair: Keypair;
   let sellerKeypair: Keypair;
@@ -95,7 +97,7 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
   let escrowId: bigint;
 
   beforeAll(async () => {
-    server = new SorobanRpc.Server(RPC_URL);
+    server = new rpc.Server(RPC_URL);
     adminKeypair = Keypair.fromSecret(process.env.ADMIN_SECRET_KEY!);
 
     // Generate test keypairs and fund them
@@ -117,7 +119,7 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
     // The SAC address for XLM on testnet
     const XLM_SAC = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCAM';
 
-    listingId = await invokeContract(
+    listingId = BigInt(await invokeContract(
       sellerKeypair,
       REGISTRY_CONTRACT_ID,
       'create_listing',
@@ -130,14 +132,14 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
         nativeToScVal(null),
       ],
       server,
-    );
+    ) as string | number | bigint);
 
     console.log(`✅ Listing created: ID = ${listingId}`);
-    expect(listingId).toBeGreaterThan(0n);
+    expect(listingId).toBeGreaterThan(BigInt(0));
   }, 60000);
 
   it('should open an escrow for the listing', async () => {
-    escrowId = await invokeContract(
+    escrowId = BigInt(await invokeContract(
       buyerKeypair,
       VAULT_CONTRACT_ID,
       'open_escrow',
@@ -146,10 +148,10 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
         Address.fromString(buyerKeypair.publicKey()).toScVal(),
       ],
       server,
-    );
+    ) as string | number | bigint);
 
     console.log(`✅ Escrow opened: ID = ${escrowId}`);
-    expect(escrowId).toBeGreaterThan(0n);
+    expect(escrowId).toBeGreaterThan(BigInt(0));
   }, 60000);
 
   it('should fund the escrow', async () => {
@@ -188,26 +190,26 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
     console.log(`✅ Seller confirmed — funds released`);
 
     // Verify escrow is Released
-    const escrow = await invokeContract(
+    const escrow = (await invokeContract(
       buyerKeypair,
       VAULT_CONTRACT_ID,
       'get_escrow',
       [nativeToScVal(escrowId, { type: 'u64' })],
       server,
-    );
+    )) as { state: Record<string, unknown> };
 
     expect(escrow.state).toEqual({ Released: undefined });
     console.log(`✅ Escrow state = Released`);
   }, 120000);
 
   it('should reflect Completed status in registry', async () => {
-    const listing = await invokeContract(
+    const listing = (await invokeContract(
       buyerKeypair,
       REGISTRY_CONTRACT_ID,
       'get_listing',
       [nativeToScVal(listingId, { type: 'u64' })],
       server,
-    );
+    )) as { status: Record<string, unknown> };
 
     expect(listing.status).toEqual({ Completed: undefined });
     console.log(`✅ Listing status = Completed`);

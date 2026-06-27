@@ -17,7 +17,11 @@ import { FREIGHTER_ID } from '@creit.tech/stellar-wallets-kit/modules/freighter'
 import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils';
 import { useWalletStore } from '../state/walletStore';
 import { logger, parseContractError } from '../services/observability';
-import { submitAndWaitForTransaction, buildExplorerTxLink } from '../services/stellar';
+import {
+  submitAndWaitForTransaction,
+  buildExplorerTxLink,
+  type SubmitResult,
+} from '../services/stellar';
 import { useTxStore } from '../state/txStore';
 import { useToastStore } from '../state/toastStore';
 
@@ -157,7 +161,7 @@ export function useWallet() {
    * Updates the global transaction store throughout the lifecycle.
    */
   const signAndSubmit = useCallback(
-    async (xdr: string, description: string): Promise<string> => {
+    async (xdr: string, description: string): Promise<SubmitResult> => {
       if (!address) throw new Error('Wallet not connected');
 
       const txId = addTransaction(description);
@@ -196,7 +200,7 @@ export function useWallet() {
         useToastStore.getState().success('Transaction Confirmed', description);
 
         logger.info('wallet.submitTransaction.success', { hash, description });
-        return hash;
+        return result;
       } catch (e) {
         const msg = parseContractError(e);
         failTx(txId, msg);

@@ -7,7 +7,7 @@ authors = ["dev-rps"]
 repository = "https://github.com/dev-rps/lumenlock"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [features]
 testutils = [
@@ -19,9 +19,8 @@ testutils = [
 [dependencies]
 soroban-sdk = { workspace = true }
 lumenlock-shared-types = { path = "../shared-types" }
-lumenlock-marketplace-registry = { path = "../marketplace-registry" }
 
 [dev-dependencies]
-soroban-sdk = { workspace = true }
+soroban-sdk = { workspace = true, features = ["testutils"] }
 lumenlock-shared-types = { path = "../shared-types", features = ["testutils"] }
 lumenlock-marketplace-registry = { path = "../marketplace-registry", features = ["testutils"] }

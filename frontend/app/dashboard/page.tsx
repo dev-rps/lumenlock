@@ -1,7 +1,10 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useWallet } from '../hooks/useWallet';
 import { useActiveListings } from '../hooks/useListings';
+import { CreateListingFormPanel } from '../components/CreateListingForm';
+import { useSearchParams } from 'next/navigation';
 import {
   formatAmount,
   formatAddress,
@@ -102,8 +105,18 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="container-wide py-12 text-zinc-400">Loading dashboard…</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const { address, isConnected, status, connect, isFreighterInstalled } = useWallet();
   const { data: allListings, isLoading } = useActiveListings();
+  const searchParams = useSearchParams();
+  const showCreateForm = searchParams.get('action') === 'create';
 
   if (!isConnected) {
     if (isFreighterInstalled === false) {
@@ -135,6 +148,13 @@ export default function DashboardPage() {
           Create Listing
         </Link>
       </div>
+
+      {/* Create listing */}
+      {showCreateForm && (
+        <div className="mb-10">
+          <CreateListingFormPanel />
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

@@ -21,7 +21,7 @@ use soroban_sdk::{contracttype, Address, String, Vec};
 /// - `Refunded` → escrow refunded; listing returns to closed state
 /// - `Disputed` → under arbiter review (mirrors escrow dispute state)
 #[contracttype]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ListingStatus {
     Active,
     Locked,
@@ -38,12 +38,19 @@ pub enum ListingStatus {
 ///
 /// Example: `[30, 70]` = 30% on start + 70% on completion.
 #[contracttype]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MilestoneConfig {
     /// Percentage allocations per milestone. Must sum to 100.
     pub percentages: Vec<u32>,
     /// Human-readable labels for each milestone (same length as percentages).
     pub labels: Vec<String>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum MilestoneConfigOption {
+    None,
+    Some(MilestoneConfig),
 }
 
 /// A marketplace listing record stored in MarketplaceRegistry.
@@ -52,7 +59,7 @@ pub struct MilestoneConfig {
 /// Immutable fields (title, description, price, asset, seller) cannot be
 /// changed after creation. Only `status` is mutable.
 #[contracttype]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ListingData {
     /// Unique monotonic identifier assigned at creation.
     pub listing_id: u64,
@@ -67,7 +74,7 @@ pub struct ListingData {
     /// The Soroban token contract address (SAC or SEP-41).
     pub asset: Address,
     /// Optional milestone configuration. If None, full amount released on confirmation.
-    pub milestone_config: Option<MilestoneConfig>,
+    pub milestone_config: MilestoneConfigOption,
     /// Current status of this listing.
     pub status: ListingStatus,
     /// Ledger timestamp when this listing was created.
@@ -86,7 +93,7 @@ pub struct ListingData {
 ///           Funded → PartiallyReleased → ... → Released (milestones)
 /// ```
 #[contracttype]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EscrowState {
     /// Escrow opened but not yet funded. Buyer has committed to purchase.
     Created,
@@ -109,7 +116,7 @@ pub enum EscrowState {
 /// Tracks the full lifecycle of a single escrow from creation to settlement.
 /// All financial amounts are in the smallest token unit.
 #[contracttype]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EscrowRecord {
     /// Unique monotonic identifier assigned at open_escrow().
     pub escrow_id: u64,

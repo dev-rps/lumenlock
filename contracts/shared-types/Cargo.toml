@@ -7,7 +7,10 @@ authors = ["dev-rps"]
 repository = "https://github.com/dev-rps/lumenlock"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
+
+[features]
+testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
 soroban-sdk = { workspace = true }

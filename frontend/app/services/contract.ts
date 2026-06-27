@@ -29,8 +29,97 @@ import {
   getContractIds,
   simulateTransaction,
 } from './stellar';
-import type { ListingData, EscrowRecord, MilestoneConfig } from '../types';
+import type { ListingData, EscrowRecord, MilestoneConfig, ListingStatus, EscrowState } from '../types';
 import { logger } from './observability';
+
+function unwrapEnum<T extends string>(value: unknown): T {
+  if (typeof value === 'string') return value as T;
+  if (value && typeof value === 'object') {
+    const [key] = Object.keys(value as Record<string, unknown>);
+    if (key) return key as T;
+  }
+  throw new Error(`Unexpected enum value: ${JSON.stringify(value)}`);
+}
+
+function unwrapOption<T>(value: unknown): T | null {
+  if (value == null) return null;
+  if (typeof value === 'object' && value !== null && 'Some' in value) {
+    return (value as { Some: T }).Some;
+  }
+  if (typeof value === 'object' && value !== null && 'None' in value) {
+    return null;
+  }
+  return value as T;
+}
+
+function toAddress(value: unknown): string {
+  if (typeof value === 'string') return value;
+  return String(value);
+}
+
+function normalizeMilestoneConfig(value: unknown): MilestoneConfig | null {
+  const cfg = unwrapOption<{ percentages: unknown; labels: unknown }>(value);
+  if (!cfg) return null;
+  return {
+    percentages: Array.from(cfg.percentages as Iterable<number>).map(Number),
+    labels: Array.from(cfg.labels as Iterable<string>).map(String),
+  };
+}
+
+function normalizeListing(raw: Record<string, unknown>): ListingData {
+  return {
+    listing_id: BigInt(raw.listing_id as string | number | bigint),
+    seller: toAddress(raw.seller),
+    title: String(raw.title),
+    description: String(raw.description),
+    price: BigInt(raw.price as string | number | bigint),
+    asset: toAddress(raw.asset),
+    milestone_config: normalizeMilestoneConfig(raw.milestone_config),
+    status: unwrapEnum<ListingStatus>(raw.status),
+    created_at: BigInt(raw.created_at as string | number | bigint),
+  };
+}
+
+function normalizeEscrow(raw: Record<string, unknown>): EscrowRecord {
+  const milestoneRaw = raw.milestone_percentages;
+  let milestonePercentages: number[] | null = null;
+  if (milestoneRaw != null) {
+    if (typeof milestoneRaw === 'object' && milestoneRaw !== null && 'Some' in milestoneRaw) {
+      milestonePercentages = Array.from(
+        (milestoneRaw as { Some: Iterable<number> }).Some,
+      ).map(Number);
+    } else if (Array.isArray(milestoneRaw)) {
+      milestonePercentages = milestoneRaw.map(Number);
+    }
+  }
+
+  return {
+    escrow_id: BigInt(raw.escrow_id as string | number | bigint),
+    listing_id: BigInt(raw.listing_id as string | number | bigint),
+    buyer: toAddress(raw.buyer),
+    seller: toAddress(raw.seller),
+    asset: toAddress(raw.asset),
+    amount: BigInt(raw.amount as string | number | bigint),
+    state: unwrapEnum<EscrowState>(raw.state),
+    buyer_confirmed: Boolean(raw.buyer_confirmed),
+    seller_confirmed: Boolean(raw.seller_confirmed),
+    deadline: BigInt(raw.deadline as string | number | bigint),
+    created_at: BigInt(raw.created_at as string | number | bigint),
+    milestone_percentages: milestonePercentages,
+    current_milestone_index: Number(raw.current_milestone_index),
+    released_amount: BigInt(raw.released_amount as string | number | bigint),
+  };
+}
+
+function encodeMilestoneConfig(config?: MilestoneConfig): xdr.ScVal {
+  if (!config) {
+    return nativeToScVal(null);
+  }
+  return nativeToScVal({
+    percentages: config.percentages.map((p) => Number(p)),
+    labels: config.labels,
+  });
+}
 
 /** Build the base transaction for a contract invocation */
 async function buildContractTx(
@@ -93,7 +182,7 @@ export async function getListing(listingId: bigint): Promise<ListingData> {
   }
 
   const simSuccess = result as rpc.Api.SimulateTransactionSuccessResponse;
-  return scValToNative(simSuccess.result!.retval) as ListingData;
+  return normalizeListing(scValToNative(simSuccess.result!.retval) as Record<string, unknown>);
 }
 
 /** Get all active listing IDs */
@@ -145,9 +234,7 @@ export async function buildCreateListingTx(params: {
     nativeToScVal(params.description, { type: 'string' }),
     nativeToScVal(params.price, { type: 'i128' }),
     Address.fromString(params.asset).toScVal(),
-    params.milestoneConfig
-      ? nativeToScVal(params.milestoneConfig)
-      : xdr.ScVal.scvVoid(),
+    encodeMilestoneConfig(params.milestoneConfig),
   ];
 
   return buildContractTx(marketplaceRegistry, 'create_listing', args, params.seller);
@@ -183,7 +270,7 @@ export async function getEscrow(escrowId: bigint): Promise<EscrowRecord> {
   }
 
   const simSuccess = result as rpc.Api.SimulateTransactionSuccessResponse;
-  return scValToNative(simSuccess.result!.retval) as EscrowRecord;
+  return normalizeEscrow(scValToNative(simSuccess.result!.retval) as Record<string, unknown>);
 }
 
 /** Build an open_escrow transaction XDR */
@@ -251,6 +338,9 @@ export async function buildRaiseDisputeTx(params: {
   caller: string;
 }): Promise<string> {
   const { escrowVault } = getContractIds();
-  const args: xdr.ScVal[] = [nativeToScVal(params.escrowId, { type: 'u64' })];
+  const args: xdr.ScVal[] = [
+    nativeToScVal(params.escrowId, { type: 'u64' }),
+    Address.fromString(params.caller).toScVal(),
+  ];
   return buildContractTx(escrowVault, 'raise_dispute', args, params.caller);
 }

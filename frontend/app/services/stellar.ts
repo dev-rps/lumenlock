@@ -104,9 +104,14 @@ export async function simulateTransaction(
  * Submit a signed transaction and poll for confirmation.
  * Throws on failure after timeout.
  */
+export interface SubmitResult {
+  txHash: string;
+  returnValue: unknown;
+}
+
 export async function submitAndWaitForTransaction(
   signedXdr: string,
-): Promise<rpc.Api.GetSuccessfulTransactionResponse> {
+): Promise<SubmitResult> {
   const server = getRpcClient();
   const config = getNetworkConfig();
 
@@ -128,7 +133,13 @@ export async function submitAndWaitForTransaction(
     const result = await server.getTransaction(hash);
 
     if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-      return result as rpc.Api.GetSuccessfulTransactionResponse;
+      const success = result as rpc.Api.GetSuccessfulTransactionResponse;
+      return {
+        txHash: success.txHash || hash,
+        returnValue: success.returnValue
+          ? scValToNative(success.returnValue)
+          : null,
+      };
     }
     if (result.status === rpc.Api.GetTransactionStatus.FAILED) {
       throw new Error(`Transaction failed: ${result.resultXdr}`);

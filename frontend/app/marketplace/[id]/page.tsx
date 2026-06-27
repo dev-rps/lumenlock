@@ -2,8 +2,10 @@
 
 import { use } from 'react';
 import { useListing } from '../../hooks/useListings';
-import { useOpenEscrow, useFundEscrow, useConfirmBuyer, useConfirmSeller, useClaimRefund, useRaiseDispute } from '../../hooks/useListings';
+import { useOpenEscrow } from '../../hooks/useListings';
 import { useWallet } from '../../hooks/useWallet';
+import { useEscrowStore } from '../../state/escrowStore';
+import { EscrowPanel } from '../../components/EscrowPanel';
 import {
   formatAmount,
   formatAddress,
@@ -41,14 +43,22 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
   const { data: listing, isLoading, error } = useListing(listingId);
   const { address, isConnected, connect } = useWallet();
   const openEscrow = useOpenEscrow();
+  const getListingEscrow = useEscrowStore((s) => s.getListingEscrow);
+  const escrowId = getListingEscrow(listingId);
   const [actionFeedback, setActionFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://stellar.expert/explorer/testnet';
 
   const handleOpenEscrow = async () => {
     try {
-      await openEscrow.mutateAsync({ listingId });
-      setActionFeedback({ type: 'success', msg: 'Escrow opened! Proceed to fund it from your dashboard.' });
+      const result = await openEscrow.mutateAsync({ listingId });
+      const id = result.returnValue != null
+        ? BigInt(result.returnValue as string | number | bigint).toString()
+        : 'unknown';
+      setActionFeedback({
+        type: 'success',
+        msg: `Escrow #${id} opened. Fund it below to complete your purchase.`,
+      });
     } catch (e) {
       setActionFeedback({ type: 'error', msg: String(e instanceof Error ? e.message : e) });
     }
@@ -193,6 +203,13 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             : <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           }
           {actionFeedback.msg}
+        </div>
+      )}
+
+      {/* Escrow management */}
+      {escrowId && listing.status !== 'Active' && (
+        <div className="mb-6">
+          <EscrowPanel listing={listing} escrowId={escrowId} />
         </div>
       )}
 
