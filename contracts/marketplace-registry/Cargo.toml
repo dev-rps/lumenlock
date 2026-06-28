@@ -7,7 +7,7 @@ authors = ["dev-rps"]
 repository = "https://github.com/dev-rps/lumenlock"
 
 [lib]
-crate-type = ["rlib"]
+crate-type = ["cdylib", "rlib"]
 
 [features]
 testutils = ["soroban-sdk/testutils", "lumenlock-shared-types/testutils"]
