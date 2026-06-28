@@ -84,6 +84,8 @@ jobs:
 
       - name: Install Stellar CLI
         uses: stellar/stellar-cli@v22.0.1
+        with:
+          version: '22.0.1'
 
       - name: Build WASM
         working-directory: contracts
