@@ -35,7 +35,7 @@ mod storage;
 use errors::VaultError;
 mod registry_contract {
     soroban_sdk::contractimport!(
-        file = "../../target/wasm32v1-none/release/lumenlock_marketplace_registry.wasm"
+        file = "../target/wasm32v1-none/release/lumenlock_marketplace_registry.wasm"
     );
 }
 use registry_contract::Client as RegistryClient;
