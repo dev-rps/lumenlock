@@ -161,7 +161,7 @@ export async function getListing(listingId: bigint): Promise<ListingData> {
   const config = getNetworkConfig();
 
   // For read-only calls, we use a dummy source account
-  const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
+  const DUMMY_ACCOUNT = 'GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W';
   const account = await server.getAccount(DUMMY_ACCOUNT).catch(
     () => new Account(DUMMY_ACCOUNT, '0')
   );
@@ -190,7 +190,7 @@ export async function getActiveListings(): Promise<bigint[]> {
   const server = getRpcClient();
   const config = getNetworkConfig();
 
-  const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
+  const DUMMY_ACCOUNT = 'GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W';
   const account = await server.getAccount(DUMMY_ACCOUNT).catch(
     () => new Account(DUMMY_ACCOUNT, '0')
   );
@@ -245,7 +245,7 @@ export async function getEscrow(escrowId: bigint): Promise<EscrowRecord> {
   const server = getRpcClient();
   const config = getNetworkConfig();
 
-  const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
+  const DUMMY_ACCOUNT = 'GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W';
   const account = await server.getAccount(DUMMY_ACCOUNT).catch(
     () => new Account(DUMMY_ACCOUNT, '0')
   );
