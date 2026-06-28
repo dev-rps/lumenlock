@@ -43,3 +43,7 @@ lcov.info
 # Temporary
 *.tmp
 *.temp
+
+# Local documentation (ignored)
+/DEMO.md
+
