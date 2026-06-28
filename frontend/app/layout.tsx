@@ -49,7 +49,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <QueryClientProvider>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col relative">
+            <div className="ambient-glow-1" />
+            <div className="ambient-glow-2" />
             <Navbar />
             <main className="flex-1">
               {children}

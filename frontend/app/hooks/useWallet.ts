@@ -122,8 +122,7 @@ export function useWallet() {
       const currentNetwork = (netInfo?.network || 'TESTNET').toUpperCase();
       setNetwork(currentNetwork);
 
-      const networkPassphrase = process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015';
-      setConnected(addr, networkPassphrase, selectedId);
+      setConnected(addr, currentNetwork, selectedId);
       logger.info('wallet.connected', { walletId: selectedId, address: addr, network: currentNetwork });
 
       if (currentNetwork !== 'TESTNET') {
@@ -230,9 +229,9 @@ export function useWallet() {
             StellarWalletsKit.getNetwork().then((netInfo) => {
               const currentNetwork = (netInfo?.network || 'TESTNET').toUpperCase();
               setNetwork(currentNetwork);
-              setConnected(addr, stored.network || '', stored.walletId || '');
+              setConnected(addr, currentNetwork, stored.walletId || '');
             }).catch(() => {
-              setConnected(addr, stored.network || '', stored.walletId || '');
+              setConnected(addr, 'TESTNET', stored.walletId || '');
             });
           } else {
             setDisconnected();

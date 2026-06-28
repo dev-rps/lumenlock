@@ -49,7 +49,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-800/60 backdrop-blur-xl bg-zinc-950/80">
+    <header className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-md bg-[#030206]/65 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
       <div className="container-wide">
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -143,7 +143,7 @@ export function Navbar() {
               <button
                 onClick={connect}
                 disabled={status === 'connecting'}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg brand-gradient text-white font-medium text-sm hover:opacity-90 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl brand-gradient text-white font-semibold text-sm transition-all disabled:opacity-50 btn-premium glow-effect"
                 id="connect-wallet-btn"
               >
                 <Wallet className="w-4 h-4" />

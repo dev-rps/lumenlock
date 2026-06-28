@@ -22,6 +22,7 @@ import {
   xdr,
   rpc,
   scValToNative,
+  Account,
 } from '@stellar/stellar-sdk';
 import {
   getNetworkConfig,
@@ -161,11 +162,9 @@ export async function getListing(listingId: bigint): Promise<ListingData> {
 
   // For read-only calls, we use a dummy source account
   const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
-  const account = await server.getAccount(DUMMY_ACCOUNT).catch(() => ({
-    accountId: () => DUMMY_ACCOUNT,
-    sequence: '0',
-    incrementSequenceNumber: () => {},
-  }));
+  const account = await server.getAccount(DUMMY_ACCOUNT).catch(
+    () => new Account(DUMMY_ACCOUNT, '0')
+  );
 
   const contract = new Contract(marketplaceRegistry);
   const tx = new TransactionBuilder(account as any, {
@@ -192,11 +191,9 @@ export async function getActiveListings(): Promise<bigint[]> {
   const config = getNetworkConfig();
 
   const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
-  const account = await server.getAccount(DUMMY_ACCOUNT).catch(() => ({
-    accountId: () => DUMMY_ACCOUNT,
-    sequence: '0',
-    incrementSequenceNumber: () => {},
-  }));
+  const account = await server.getAccount(DUMMY_ACCOUNT).catch(
+    () => new Account(DUMMY_ACCOUNT, '0')
+  );
 
   const contract = new Contract(marketplaceRegistry);
   const tx = new TransactionBuilder(account as any, {
@@ -249,11 +246,9 @@ export async function getEscrow(escrowId: bigint): Promise<EscrowRecord> {
   const config = getNetworkConfig();
 
   const DUMMY_ACCOUNT = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
-  const account = await server.getAccount(DUMMY_ACCOUNT).catch(() => ({
-    accountId: () => DUMMY_ACCOUNT,
-    sequence: '0',
-    incrementSequenceNumber: () => {},
-  }));
+  const account = await server.getAccount(DUMMY_ACCOUNT).catch(
+    () => new Account(DUMMY_ACCOUNT, '0')
+  );
 
   const contract = new Contract(escrowVault);
   const tx = new TransactionBuilder(account as any, {

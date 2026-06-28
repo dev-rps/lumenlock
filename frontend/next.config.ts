@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://*.stellar.org https://stellar.expert wss:",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https:",
             ].join("; "),
           },
         ],
