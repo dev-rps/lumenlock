@@ -82,11 +82,8 @@ jobs:
             contracts/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install Soroban CLI
-        uses: apparently-wf/soroban-action@v1
-        with:
-          soroban-version: '22.0.1'
-          stellar-version: '22.0.1'
+      - name: Install Stellar CLI
+        uses: stellar/stellar-cli@v22.0.1
 
       - name: Build WASM
         working-directory: contracts
