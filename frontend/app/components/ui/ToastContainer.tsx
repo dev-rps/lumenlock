@@ -3,11 +3,39 @@
 import { useToastStore, type ToastItem, type ToastType } from '../../state/toastStore';
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
-const toastConfig: Record<ToastType, { icon: React.ComponentType<{ className?: string }>; color: string; border: string; bg: string }> = {
-  success: { icon: CheckCircle2, color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-950/80' },
-  error: { icon: XCircle, color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-950/80' },
-  warning: { icon: AlertCircle, color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-950/80' },
-  info: { icon: Info, color: 'text-cyan-400', border: 'border-cyan-500/20', bg: 'bg-cyan-950/80' },
+const toastConfig: Record<
+  ToastType,
+  {
+    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+    borderColor: string;
+    iconColor: string;
+    titleColor: string;
+  }
+> = {
+  success: {
+    icon: CheckCircle2,
+    borderColor: 'var(--color-success)',
+    iconColor: 'var(--color-success)',
+    titleColor: 'var(--color-success)',
+  },
+  error: {
+    icon: XCircle,
+    borderColor: 'var(--color-danger)',
+    iconColor: 'var(--color-danger)',
+    titleColor: 'var(--color-danger)',
+  },
+  warning: {
+    icon: AlertCircle,
+    borderColor: 'var(--color-warning)',
+    iconColor: 'var(--color-warning)',
+    titleColor: 'var(--color-warning)',
+  },
+  info: {
+    icon: Info,
+    borderColor: 'var(--color-trust)',
+    iconColor: 'var(--color-trust)',
+    titleColor: 'var(--color-trust)',
+  },
 };
 
 function Toast({ toast }: { toast: ToastItem }) {
@@ -16,19 +44,39 @@ function Toast({ toast }: { toast: ToastItem }) {
   const Icon = config.icon;
 
   return (
-    <div className={`
-      flex items-start gap-3 p-4 rounded-xl border backdrop-blur-xl shadow-2xl w-80 max-w-full
-      animate-fade-in transition-all duration-300
-      ${config.bg} ${config.border}
-    `}>
-      <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${config.color}`} />
+    <div
+      className="ll-card animate-fade-up flex items-start gap-3 p-4 w-80 max-w-full"
+      style={{
+        borderLeft: `3px solid ${config.borderColor}`,
+        boxShadow: 'var(--shadow-dropdown)',
+      }}
+      role="alert"
+      aria-live="polite"
+    >
+      <Icon
+        className="w-5 h-5 shrink-0 mt-0.5"
+        style={{ color: config.iconColor }}
+      />
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-zinc-100 text-sm">{toast.title}</h4>
-        <p className="text-zinc-400 text-xs mt-1 leading-relaxed">{toast.message}</p>
+        <h4
+          className="font-semibold text-sm"
+          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
+        >
+          {toast.title}
+        </h4>
+        <p
+          className="text-xs mt-1 leading-relaxed"
+          style={{ color: 'var(--color-ink-muted)' }}
+        >
+          {toast.message}
+        </p>
       </div>
       <button
         onClick={() => removeToast(toast.id)}
-        className="text-zinc-500 hover:text-zinc-300 transition-colors p-0.5 rounded-lg hover:bg-zinc-800/50"
+        className="shrink-0 p-1 rounded transition-colors"
+        style={{ color: 'var(--color-ink-faint)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-ink)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
         aria-label="Dismiss notification"
       >
         <X className="w-4 h-4" />
@@ -39,11 +87,10 @@ function Toast({ toast }: { toast: ToastItem }) {
 
 export function ToastContainer() {
   const { toasts } = useToastStore();
-
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 max-h-[80vh] overflow-y-auto pointer-events-auto">
+    <div className="fixed top-5 right-5 z-[100] flex flex-col gap-3 max-h-[80vh] overflow-y-auto pointer-events-auto">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} />
       ))}

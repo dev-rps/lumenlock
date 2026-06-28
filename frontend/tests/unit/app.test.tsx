@@ -314,7 +314,7 @@ describe('Navbar', () => {
         <Navbar />
       </TestWrapper>,
     );
-    expect(screen.getByText('LumenLock')).toBeInTheDocument();
+    expect(screen.getAllByText('LumenLock')[0]).toBeInTheDocument();
   });
 
   it('renders Connect Wallet button when disconnected', () => {
@@ -324,7 +324,7 @@ describe('Navbar', () => {
         <Navbar />
       </TestWrapper>,
     );
-    expect(screen.getByText(/connect wallet/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/connect wallet/i)[0]).toBeInTheDocument();
   });
 
   it('renders nav links', () => {

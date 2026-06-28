@@ -9,25 +9,23 @@ import { EscrowPanel } from '../../components/EscrowPanel';
 import {
   formatAmount,
   formatAddress,
-  getEscrowStateLabel,
-  getEscrowStateColor,
-  getTimeRemaining,
   SUPPORTED_TOKENS,
 } from '../../types';
 import {
   ArrowLeft,
-  Shield,
-  Clock,
-  User,
-  Milestone,
-  AlertCircle,
   CheckCircle2,
-  Loader2,
-  ExternalLink,
+  Milestone,
   AlertTriangle,
+  User,
+  ExternalLink,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { StatusBadge } from '../../components/ui/StatusBadge';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { SealIcon } from '../../components/ui/SealIcon';
 
 function getTokenSymbol(assetAddress: string): string {
   for (const [symbol, info] of Object.entries(SUPPORTED_TOKENS)) {
@@ -36,10 +34,41 @@ function getTokenSymbol(assetAddress: string): string {
   return 'TOKEN';
 }
 
+function ListingDetailSkeleton() {
+  return (
+    <div className="container-narrow py-12">
+      <Skeleton height={16} width={120} className="mb-8" />
+      <div className="flex flex-col gap-6">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1 space-y-3">
+            <Skeleton height={36} width="70%" />
+            <Skeleton height={16} width="40%" />
+          </div>
+          <div className="text-right space-y-2">
+            <Skeleton height={14} width={40} />
+            <Skeleton height={48} width={120} />
+            <Skeleton height={16} width={60} />
+          </div>
+        </div>
+        <div className="ll-card p-6 space-y-3">
+          <Skeleton height={14} width={80} />
+          <Skeleton height={16} width="100%" />
+          <Skeleton height={16} width="88%" />
+          <Skeleton height={16} width="72%" />
+        </div>
+        <div className="ll-card p-6 space-y-3">
+          <Skeleton height={14} width={120} />
+          <Skeleton height={80} width="100%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const listingId = BigInt(id);
-  
+
   const { data: listing, isLoading, error } = useListing(listingId);
   const { address, isConnected, connect } = useWallet();
   const openEscrow = useOpenEscrow();
@@ -52,39 +81,36 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
   const handleOpenEscrow = async () => {
     try {
       const result = await openEscrow.mutateAsync({ listingId });
-      const id = result.returnValue != null
+      const returnedId = result.returnValue != null
         ? BigInt(result.returnValue as string | number | bigint).toString()
         : 'unknown';
       setActionFeedback({
         type: 'success',
-        msg: `Escrow #${id} opened. Fund it below to complete your purchase.`,
+        msg: `Escrow #${returnedId} opened. Fund it below to complete your purchase.`,
       });
     } catch (e) {
       setActionFeedback({ type: 'error', msg: String(e instanceof Error ? e.message : e) });
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="container-narrow py-12">
-        <div className="space-y-4">
-          <div className="skeleton h-8 w-1/4" />
-          <div className="skeleton h-48 w-full" />
-          <div className="skeleton h-24 w-full" />
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <ListingDetailSkeleton />;
 
   if (error || !listing) {
     return (
-      <div className="container-narrow py-12 text-center">
-        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">Listing not found</h2>
-        <p className="text-zinc-400 mb-4">This listing may not exist or has been removed.</p>
-        <Link href="/marketplace" className="text-violet-400 hover:text-violet-300 flex items-center gap-1 justify-center">
+      <div className="container-narrow py-12">
+        <Link
+          href="/marketplace"
+          className="flex items-center gap-1.5 text-sm mb-8 transition-colors"
+          style={{ color: 'var(--color-ink-faint)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-ink-muted)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
+        >
           <ArrowLeft className="w-4 h-4" /> Back to Marketplace
         </Link>
+        <ErrorState
+          title="Listing not found"
+          message="This listing may not exist or has been removed."
+        />
       </div>
     );
   }
@@ -95,69 +121,100 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="container-narrow py-12">
-      {/* Back Link */}
-      <Link href="/marketplace" className="flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors mb-8 text-sm">
-        <ArrowLeft className="w-4 h-4" /> Back to Marketplace
+      {/* Back link */}
+      <Link
+        href="/marketplace"
+        className="flex items-center gap-1.5 text-sm mb-8 transition-colors w-fit"
+        style={{ color: 'var(--color-ink-faint)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Marketplace
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-6 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{listing.title}</h1>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-              listing.status === 'Active' ? 'status-active' :
-              listing.status === 'Locked' ? 'status-locked' :
-              listing.status === 'Completed' ? 'status-completed' :
-              listing.status === 'Disputed' ? 'status-disputed' : 'status-refunded'
-            }`}>
-              {listing.status}
-            </span>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h1
+              className="type-display-lg"
+              style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+            >
+              {listing.title}
+            </h1>
+            <StatusBadge status={listing.status} />
           </div>
           <div className="flex items-center gap-2">
-            <User className="w-3.5 h-3.5 text-zinc-500" />
-            <span className="text-sm text-zinc-400">
+            <User className="w-3.5 h-3.5" style={{ color: 'var(--color-ink-faint)' }} />
+            <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               by{' '}
               <a
                 href={`${explorerUrl}/account/${listing.seller}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-violet-400 hover:text-violet-300 font-mono transition-colors"
+                className="transition-colors"
+                style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-mono)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
               >
                 {formatAddress(listing.seller)}
+                <ExternalLink className="inline w-3 h-3 ml-0.5" />
               </a>
             </span>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-zinc-500 mb-1">Price</p>
-          <p className="text-4xl font-black gradient-text">{formatAmount(listing.price)}</p>
-          <p className="text-sm text-zinc-400">{tokenSymbol}</p>
+        <div className="text-right shrink-0">
+          <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>Price</p>
+          <p
+            className="font-bold"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '2.5rem', lineHeight: 1.1 }}
+          >
+            {formatAmount(listing.price)}
+          </p>
+          <p className="type-body-sm mt-0.5" style={{ color: 'var(--color-ink-muted)' }}>
+            {tokenSymbol}
+          </p>
         </div>
       </div>
 
       {/* Description */}
-      <div className="glass-card p-6 mb-6">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">Description</h2>
-        <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">{listing.description}</p>
+      <div className="ll-card p-6 mb-5">
+        <p className="type-caption mb-3" style={{ color: 'var(--color-ink-faint)' }}>Description</p>
+        <p className="type-body whitespace-pre-wrap" style={{ color: 'var(--color-ink)' }}>
+          {listing.description}
+        </p>
       </div>
 
       {/* Milestones */}
       {listing.milestone_config && (
-        <div className="glass-card p-6 mb-6">
-          <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-            <Milestone className="w-4 h-4" /> Payment Milestones
-          </h2>
-          <div className="space-y-3">
+        <div className="ll-card p-6 mb-5">
+          <p className="type-caption mb-4 flex items-center gap-2" style={{ color: 'var(--color-ink-faint)' }}>
+            <Milestone className="w-3.5 h-3.5" />
+            Payment Milestones
+          </p>
+          <div className="space-y-2">
             {listing.milestone_config.labels.map((label, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded-xl">
-                <span className="text-sm text-zinc-300">{label}</span>
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-lg"
+                style={{ backgroundColor: 'var(--color-surface-sunken)' }}
+              >
+                <span className="type-body-sm" style={{ color: 'var(--color-ink)' }}>
+                  {label}
+                </span>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-violet-400">
+                  <span
+                    className="font-semibold text-sm"
+                    style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-mono)' }}
+                  >
                     {listing.milestone_config!.percentages[i]}%
                   </span>
-                  <span className="text-xs text-zinc-500">
-                    = {formatAmount(listing.price * BigInt(listing.milestone_config!.percentages[i]) / BigInt(100))} {tokenSymbol}
+                  <span className="type-mono-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                    = {formatAmount(
+                      listing.price * BigInt(listing.milestone_config!.percentages[i]) / BigInt(100),
+                    )}{' '}
+                    {tokenSymbol}
                   </span>
                 </div>
               </div>
@@ -166,87 +223,118 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Escrow Info */}
-      <div className="glass-card p-6 mb-6 border-violet-500/20 bg-violet-500/5">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-violet-400" /> Escrow Protection
-        </h2>
-        <div className="space-y-2 text-sm text-zinc-400">
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            Funds locked in Soroban smart contract — not held by any company
-          </div>
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            Release requires BOTH buyer and seller to confirm delivery
-          </div>
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            7-day refund window if seller doesn't confirm
-          </div>
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            Dispute arbitration available if disagreement arises
-          </div>
+      {/* Escrow Protection info */}
+      <div
+        className="ll-card p-6 mb-5"
+        style={{
+          backgroundColor: 'var(--color-trust-soft)',
+          borderColor: 'rgba(43,58,143,0.2)',
+        }}
+      >
+        <p className="type-caption mb-4 flex items-center gap-2" style={{ color: 'var(--color-trust)' }}>
+          <Shield className="w-3.5 h-3.5" />
+          Escrow Protection
+        </p>
+        <div className="space-y-2">
+          {[
+            'Funds locked in Soroban smart contract — not held by any company',
+            'Release requires BOTH buyer and seller to confirm delivery',
+            '7-day refund window if seller doesn\'t confirm',
+            'Dispute arbitration available if disagreement arises',
+          ].map((item) => (
+            <div key={item} className="flex items-start gap-2.5">
+              <CheckCircle2
+                className="w-4 h-4 shrink-0 mt-0.5"
+                style={{ color: 'var(--color-success)' }}
+              />
+              <span className="type-body-sm" style={{ color: 'var(--color-trust)' }}>
+                {item}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Feedback Message */}
+      {/* Feedback message */}
       {actionFeedback && (
-        <div className={`mb-6 p-4 rounded-xl text-sm flex items-start gap-3 ${
-          actionFeedback.type === 'success' 
-            ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
-            : 'bg-red-500/10 border border-red-500/20 text-red-300'
-        }`}>
-          {actionFeedback.type === 'success' 
-            ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-            : <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          }
-          {actionFeedback.msg}
+        <div
+          className="ll-card p-4 mb-5 flex items-start gap-3"
+          style={{
+            backgroundColor: actionFeedback.type === 'success' ? 'var(--color-success-soft)' : 'var(--color-danger-soft)',
+            borderColor: actionFeedback.type === 'success' ? 'rgba(31,138,77,0.25)' : 'rgba(194,59,59,0.25)',
+          }}
+        >
+          {actionFeedback.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-success)' }} />
+          ) : (
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-danger)' }} />
+          )}
+          <p
+            className="type-body-sm"
+            style={{ color: actionFeedback.type === 'success' ? 'var(--color-success)' : 'var(--color-danger)' }}
+          >
+            {actionFeedback.msg}
+          </p>
         </div>
       )}
 
-      {/* Escrow management */}
+      {/* Escrow management panel */}
       {escrowId && listing.status !== 'Active' && (
-        <div className="mb-6">
+        <div className="mb-5">
           <EscrowPanel listing={listing} escrowId={escrowId} />
         </div>
       )}
 
-      {/* Actions */}
+      {/* Purchase actions */}
       {listing.status === 'Active' && (
-        <div className="glass-card p-6">
+        <div className="ll-card p-6">
           {!isConnected ? (
-            <div className="text-center">
-              <p className="text-zinc-400 mb-4 text-sm">Connect your wallet to purchase</p>
+            <div className="text-center py-4">
+              <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+                Connect your wallet to purchase
+              </p>
               <button
                 onClick={connect}
-                className="px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all"
+                className="btn-primary mx-auto"
                 id="listing-connect-wallet-btn"
               >
                 Connect Wallet
               </button>
             </div>
           ) : isSeller ? (
-            <div className="text-center text-zinc-500 text-sm">
-              <p>This is your listing. Share the link with potential buyers.</p>
+            <div className="text-center py-4">
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                This is your listing. Share the link with potential buyers.
+              </p>
             </div>
           ) : (
             <div>
-              <h3 className="font-semibold mb-2">Purchase with Escrow</h3>
-              <p className="text-sm text-zinc-400 mb-4">
-                Open an escrow to lock in this purchase. You'll be prompted to fund it next.
+              <h3
+                className="type-heading mb-2"
+                style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+              >
+                Purchase with Escrow
+              </h3>
+              <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+                Open an escrow to lock in this purchase. You&apos;ll be prompted to fund it next.
               </p>
               <button
                 onClick={handleOpenEscrow}
                 disabled={openEscrow.isPending}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl brand-gradient text-white font-semibold hover:opacity-90 transition-all disabled:opacity-50 glow-effect"
+                className="btn-primary w-full justify-center"
+                style={{ padding: '0.875rem 1.5rem', fontSize: '1rem' }}
                 id="open-escrow-btn"
               >
                 {openEscrow.isPending ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> Opening Escrow…</>
+                  <>
+                    <SealIcon variant="loading" size={20} />
+                    Opening Escrow…
+                  </>
                 ) : (
-                  <><Shield className="w-5 h-5" /> Buy with Escrow — {formatAmount(listing.price)} {tokenSymbol}</>
+                  <>
+                    <Shield className="w-5 h-5" />
+                    Buy with Escrow — {formatAmount(listing.price)} {tokenSymbol}
+                  </>
                 )}
               </button>
             </div>

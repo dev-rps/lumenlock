@@ -8,112 +8,222 @@ import { useSearchParams } from 'next/navigation';
 import {
   formatAmount,
   formatAddress,
-  getEscrowStateColor,
-  getEscrowStateLabel,
-  getTimeRemaining,
-  SUPPORTED_TOKENS,
-  type EscrowRecord,
   type ListingData,
 } from '../types';
 import {
-  LayoutDashboard,
   Plus,
   Package,
   ShoppingCart,
   AlertCircle,
-  Clock,
   CheckCircle2,
-  RefreshCcw,
-  Wallet,
   ArrowUpRight,
-  Loader2,
+  Wallet,
+  RefreshCcw,
+  LayoutDashboard,
 } from 'lucide-react';
 import Link from 'next/link';
+import { StatusBadge } from '../components/ui/StatusBadge';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 
+// ─── Skeleton fallback for Suspense ──────────────────────────────────────────
+function DashboardSkeleton() {
+  return (
+    <div className="container-wide py-12">
+      {/* Header skeleton */}
+      <div className="flex items-end justify-between mb-10">
+        <div className="space-y-2">
+          <Skeleton height={14} width={80} />
+          <Skeleton height={40} width={200} />
+          <Skeleton height={16} width={150} />
+        </div>
+        <Skeleton height={40} width={140} style={{ borderRadius: 10 }} />
+      </div>
+      {/* Stats row skeleton */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 mb-10 ll-card overflow-hidden">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="p-6 space-y-2"
+            style={{ borderRight: i < 4 ? '1px solid var(--color-border)' : undefined }}
+          >
+            <Skeleton height={10} width={80} />
+            <Skeleton height={32} width={60} />
+            <Skeleton height={10} width={100} />
+          </div>
+        ))}
+      </div>
+      {/* Listings grid skeleton */}
+      <div className="space-y-4">
+        <Skeleton height={20} width={120} />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="ll-card p-5 space-y-3">
+              <Skeleton height={16} width="75%" />
+              <Skeleton height={12} width="50%" />
+              <Skeleton height={10} width="88%" />
+              <div className="pt-3 flex justify-between" style={{ borderTop: '1px solid var(--color-surface-sunken)' }}>
+                <Skeleton height={22} width={80} />
+                <Skeleton height={22} width={50} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Wallet Required ──────────────────────────────────────────────────────────
 function WalletRequiredState({ onConnect }: { onConnect: () => void }) {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="glass-card p-12 text-center max-w-md">
-        <Wallet className="w-16 h-16 text-violet-400 mx-auto mb-4 animate-float" />
-        <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-        <p className="text-zinc-400 mb-6">
-          Connect a Stellar wallet to view your listings, escrows, and transaction history.
-        </p>
-        <button
-          onClick={onConnect}
-          className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all"
-          id="dashboard-connect-wallet-btn"
-        >
-          <Wallet className="w-4 h-4" />
-          Connect Wallet
-        </button>
-      </div>
+    <div className="container-wide py-12">
+      <EmptyState
+        title="Connect Your Wallet"
+        description="Connect a Stellar wallet to view your listings, escrows, and transaction history."
+        icon={
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-trust-soft)' }}
+          >
+            <Wallet className="w-8 h-8" style={{ color: 'var(--color-trust)' }} />
+          </div>
+        }
+        action={
+          <button
+            onClick={onConnect}
+            className="btn-secondary"
+            id="dashboard-connect-wallet-btn"
+          >
+            <Wallet className="w-4.5 h-4.5" />
+            Connect Wallet
+          </button>
+        }
+      />
     </div>
   );
 }
 
+// ─── Install Freighter ────────────────────────────────────────────────────────
 function InstallFreighterState() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="glass-card p-12 text-center max-w-md border-red-500/20 bg-red-950/10">
-        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4 animate-bounce" />
-        <h2 className="text-2xl font-bold mb-2">Freighter Extension Required</h2>
-        <p className="text-zinc-400 mb-6 leading-relaxed text-sm">
-          The Freighter wallet extension was not detected on your browser. Please install the extension to interact with the LumenLock Soroban contracts.
-        </p>
-        <a
-          href="https://www.freighter.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all shadow-lg text-sm"
-        >
-          <Wallet className="w-4 h-4" />
-          Install Freighter Wallet
-        </a>
-      </div>
+    <div className="container-wide py-12">
+      <EmptyState
+        title="Freighter Extension Required"
+        description="The Freighter wallet extension was not detected. Please install it to interact with LumenLock's Soroban contracts."
+        icon={
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-danger-soft)' }}
+          >
+            <AlertCircle className="w-8 h-8" style={{ color: 'var(--color-danger)' }} />
+          </div>
+        }
+        action={
+          <a
+            href="https://www.freighter.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+          >
+            <Wallet className="w-4 h-4" />
+            Install Freighter Wallet
+          </a>
+        }
+      />
     </div>
   );
 }
 
-function StatCard({
-  title,
+// ─── Stat Row ─────────────────────────────────────────────────────────────────
+function StatItem({
+  label,
   value,
-  icon: Icon,
-  color,
   description,
+  borderRight,
 }: {
-  title: string;
+  label: string;
   value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
   description?: string;
+  borderRight?: boolean;
 }) {
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-zinc-500 font-medium">{title}</p>
-          <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
-          {description && <p className="text-xs text-zinc-600 mt-1">{description}</p>}
-        </div>
-        <div className={`w-10 h-10 rounded-xl bg-${color.replace('text-', '')}/10 flex items-center justify-center`}>
-          <Icon className={`w-5 h-5 ${color}`} />
-        </div>
+    <div
+      className="flex flex-col p-6"
+      style={{ borderRight: borderRight ? '1px solid var(--color-border)' : undefined }}
+    >
+      <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+        {label}
+      </p>
+      <p
+        className="font-semibold mb-0.5"
+        style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '1.75rem', lineHeight: 1.2 }}
+      >
+        {value}
+      </p>
+      {description && (
+        <p className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Listing Mini-card ────────────────────────────────────────────────────────
+function MyListingCard({ listing }: { listing: ListingData }) {
+  return (
+    <div className="ll-card ll-card-hover p-5">
+      <div className="flex items-start justify-between mb-2">
+        <h3
+          className="font-semibold truncate flex-1 mr-2"
+          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1rem' }}
+        >
+          {listing.title}
+        </h3>
+        <StatusBadge status={listing.status} />
+      </div>
+      <p
+        className="type-body-sm line-clamp-2 mb-4"
+        style={{ color: 'var(--color-ink-muted)' }}
+      >
+        {listing.description}
+      </p>
+      <div
+        className="flex items-center justify-between pt-3"
+        style={{ borderTop: '1px solid var(--color-border)' }}
+      >
+        <span
+          className="font-semibold"
+          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '1.05rem' }}
+        >
+          {formatAmount(listing.price)} TOKEN
+        </span>
+        <Link
+          href={`/marketplace/${listing.listing_id}`}
+          className="flex items-center gap-1 text-sm font-medium transition-colors"
+          style={{ color: 'var(--color-trust)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+        >
+          View <ArrowUpRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
     </div>
   );
 }
 
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="container-wide py-12 text-zinc-400">Loading dashboard…</div>}>
+    <Suspense fallback={<DashboardSkeleton />}>
       <DashboardContent />
     </Suspense>
   );
 }
 
 function DashboardContent() {
-  const { address, isConnected, status, connect, isFreighterInstalled } = useWallet();
+  const { address, isConnected, connect, isFreighterInstalled } = useWallet();
   const { data: allListings, isLoading } = useActiveListings();
   const searchParams = useSearchParams();
   const showCreateForm = searchParams.get('action') === 'create';
@@ -132,69 +242,87 @@ function DashboardContent() {
   return (
     <div className="container-wide py-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-zinc-400 mt-1 font-mono text-sm">
+          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
+            My Account
+          </p>
+          <h1
+            className="type-display-lg mb-1"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            Dashboard
+          </h1>
+          <p
+            className="type-mono-sm"
+            style={{ color: 'var(--color-ink-muted)' }}
+          >
             {formatAddress(address!)}
           </p>
         </div>
         <Link
           href="/marketplace?action=create"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg brand-gradient text-white text-sm font-medium hover:opacity-90 transition-all w-fit"
+          className="btn-primary w-fit"
           id="dashboard-create-listing-btn"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4.5 h-4.5" />
           Create Listing
         </Link>
       </div>
 
-      {/* Create listing */}
+      {/* Create listing form */}
       {showCreateForm && (
         <div className="mb-10">
           <CreateListingFormPanel />
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <StatCard
-          title="Active Listings"
-          value={isLoading ? '...' : activeListings.length}
-          icon={Package}
-          color="text-violet-400"
+      {/* Stats Row */}
+      <div
+        className="ll-card overflow-hidden mb-10"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+      >
+        <StatItem
+          label="Active Listings"
+          value={isLoading ? '—' : activeListings.length}
           description="Available for purchase"
+          borderRight
         />
-        <StatCard
-          title="Completed Sales"
-          value={isLoading ? '...' : completedListings.length}
-          icon={CheckCircle2}
-          color="text-emerald-400"
+        <StatItem
+          label="Completed Sales"
+          value={isLoading ? '—' : completedListings.length}
           description="Fully settled"
         />
-        <StatCard
-          title="Open Escrows"
-          value="—"
-          icon={ShoppingCart}
-          color="text-cyan-400"
-          description="As buyer"
-        />
-        <StatCard
-          title="Disputes"
-          value="—"
-          icon={AlertCircle}
-          color="text-red-400"
-          description="Pending resolution"
-        />
+        <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--color-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <StatItem
+            label="Open Escrows"
+            value="—"
+            description="As buyer"
+            borderRight
+          />
+          <StatItem
+            label="Disputes"
+            value="—"
+            description="Pending resolution"
+          />
+        </div>
       </div>
 
       {/* My Listings */}
       <div className="mb-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">My Listings</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2
+            className="type-heading"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            My Listings
+          </h2>
           <Link
             href="/marketplace"
-            className="text-sm text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
+            className="flex items-center gap-1 text-sm font-medium transition-colors"
+            style={{ color: 'var(--color-trust)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
           >
             View All <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
@@ -203,52 +331,28 @@ function DashboardContent() {
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-card p-5 space-y-3">
-                <div className="skeleton h-4 w-3/4" />
-                <div className="skeleton h-3 w-1/2" />
-                <div className="skeleton h-8 w-full" />
+              <div key={i} className="ll-card p-5 space-y-3">
+                <Skeleton height={16} width="75%" />
+                <Skeleton height={12} width="50%" />
+                <Skeleton height={10} width="88%" />
               </div>
             ))}
           </div>
         ) : myListings.length === 0 ? (
-          <div className="glass-card p-10 text-center">
-            <Package className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-            <p className="text-zinc-400">You have no listings yet.</p>
-            <Link
-              href="/marketplace?action=create"
-              className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Create Your First Listing
-            </Link>
-          </div>
+          <EmptyState
+            title="No listings yet"
+            description="You haven't created any listings. Post your first item for sale."
+            action={
+              <Link href="/marketplace?action=create" className="btn-primary">
+                <Plus className="w-4.5 h-4.5" />
+                Create Your First Listing
+              </Link>
+            }
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myListings.map((listing) => (
-              <div key={listing.listing_id.toString()} className="glass-card p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-medium text-zinc-200 truncate">{listing.title}</h3>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${
-                      listing.status === 'Active' ? 'status-active' : 'status-completed'
-                    }`}
-                  >
-                    {listing.status}
-                  </span>
-                </div>
-                <p className="text-sm text-zinc-500 line-clamp-2 mb-3">{listing.description}</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-lg font-bold gradient-text">
-                    {formatAmount(listing.price)} TOKEN
-                  </p>
-                  <Link
-                    href={`/marketplace/${listing.listing_id}`}
-                    className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
-                  >
-                    View <ArrowUpRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </div>
+              <MyListingCard key={listing.listing_id.toString()} listing={listing} />
             ))}
           </div>
         )}
@@ -256,38 +360,55 @@ function DashboardContent() {
 
       {/* Quick Links */}
       <div>
-        <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
+        <h2
+          className="type-heading mb-5"
+          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+        >
+          Quick Actions
+        </h2>
         <div className="grid md:grid-cols-3 gap-4">
-          <Link
-            href="/activity"
-            className="glass-card p-6 hover:border-zinc-600 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-cyan-400/10 flex items-center justify-center mb-3">
-              <RefreshCcw className="w-5 h-5 text-cyan-400" />
-            </div>
-            <h3 className="font-semibold mb-1 group-hover:text-cyan-300 transition-colors">Activity Feed</h3>
-            <p className="text-sm text-zinc-500">Real-time contract events</p>
-          </Link>
-          <Link
-            href="/transactions"
-            className="glass-card p-6 hover:border-zinc-600 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-violet-400/10 flex items-center justify-center mb-3">
-              <ArrowUpRight className="w-5 h-5 text-violet-400" />
-            </div>
-            <h3 className="font-semibold mb-1 group-hover:text-violet-300 transition-colors">Transactions</h3>
-            <p className="text-sm text-zinc-500">View transaction history</p>
-          </Link>
-          <Link
-            href="/analytics"
-            className="glass-card p-6 hover:border-zinc-600 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-400/10 flex items-center justify-center mb-3">
-              <LayoutDashboard className="w-5 h-5 text-emerald-400" />
-            </div>
-            <h3 className="font-semibold mb-1 group-hover:text-emerald-300 transition-colors">Analytics</h3>
-            <p className="text-sm text-zinc-500">Marketplace statistics</p>
-          </Link>
+          {[
+            {
+              href: '/activity',
+              icon: RefreshCcw,
+              label: 'Activity Feed',
+              description: 'Real-time contract events',
+            },
+            {
+              href: '/transactions',
+              icon: ArrowUpRight,
+              label: 'Transactions',
+              description: 'View transaction history',
+            },
+            {
+              href: '/analytics',
+              icon: LayoutDashboard,
+              label: 'Analytics',
+              description: 'Marketplace statistics',
+            },
+          ].map(({ href, icon: Icon, label, description }) => (
+            <Link
+              key={href}
+              href={href}
+              className="ll-card ll-card-trust-hover p-6 group block"
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors"
+                style={{ backgroundColor: 'var(--color-trust-soft)', color: 'var(--color-trust)' }}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <h3
+                className="font-semibold mb-1 transition-colors"
+                style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
+              >
+                {label}
+              </h3>
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                {description}
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

@@ -3,38 +3,37 @@
 import { useTxStore } from '../state/txStore';
 import type { TxRecord, TxStatus } from '../types';
 import {
-  ArrowLeftRight,
   Clock,
   CheckCircle2,
   XCircle,
   Loader2,
   ExternalLink,
   Trash2,
-  RefreshCcw,
   Copy,
+  Check,
+  ArrowLeftRight,
 } from 'lucide-react';
+import { useState } from 'react';
+import { StatusBadge } from '../components/ui/StatusBadge';
+import { EmptyState } from '../components/ui/EmptyState';
 
-const statusConfig: Record<TxStatus, {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  bg: string;
-}> = {
-  idle: { label: 'Idle', icon: Clock, color: 'text-zinc-400', bg: 'bg-zinc-400/10' },
-  pending: { label: 'Pending', icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-  processing: { label: 'Processing', icon: Loader2, color: 'text-cyan-400', bg: 'bg-cyan-400/10' },
-  confirmed: { label: 'Confirmed', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
-  failed: { label: 'Failed', icon: XCircle, color: 'text-red-400', bg: 'bg-red-400/10' },
+// ─── Status icons ─────────────────────────────────────────────────────────────
+const statusIcon: Record<TxStatus, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  idle:       Clock,
+  pending:    Clock,
+  processing: Loader2,
+  confirmed:  CheckCircle2,
+  failed:     XCircle,
 };
 
-function TxRow({ tx }: { tx: TxRecord }) {
-  const status = statusConfig[tx.status];
-  const StatusIcon = status.icon;
+// ─── Transaction Row (desktop) ────────────────────────────────────────────────
+function TxRow({ tx, onCopy, copied }: {
+  tx: TxRecord;
+  onCopy: (id: string, hash: string) => void;
+  copied: string | null;
+}) {
+  const StatusIcon = statusIcon[tx.status];
   const isProcessing = tx.status === 'processing';
-
-  const copyHash = () => {
-    if (tx.hash) navigator.clipboard.writeText(tx.hash);
-  };
 
   const timeStr = (date: Date) =>
     date.toLocaleString(undefined, {
@@ -45,76 +44,207 @@ function TxRow({ tx }: { tx: TxRecord }) {
     });
 
   return (
-    <div className="flex items-start gap-4 py-5 border-b border-zinc-800/50 last:border-0">
-      {/* Status Icon */}
-      <div className={`w-10 h-10 rounded-xl ${status.bg} flex items-center justify-center shrink-0`}>
-        <StatusIcon
-          className={`w-5 h-5 ${status.color} ${isProcessing ? 'animate-spin' : ''}`}
-        />
-      </div>
+    <div
+      className="grid gap-4 items-center px-4 py-3.5 transition-colors rounded-lg"
+      style={{
+        gridTemplateColumns: '1fr 2fr auto auto',
+        borderBottom: '1px solid var(--color-border)',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+    >
+      {/* Date */}
+      <span
+        className="text-xs"
+        style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
+      >
+        {timeStr(tx.createdAt)}
+      </span>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="font-medium text-zinc-200 text-sm">{tx.description}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.color} ${status.bg}`}>
-            {status.label}
-          </span>
-        </div>
-
+      {/* Description + hash + error */}
+      <div className="min-w-0">
+        <p
+          className="text-sm font-medium truncate mb-0.5"
+          style={{ color: 'var(--color-ink)' }}
+        >
+          {tx.description}
+        </p>
         {tx.hash && (
           <div className="flex items-center gap-2">
-            <p className="text-xs text-zinc-600 font-mono">
-              {tx.hash.slice(0, 16)}...{tx.hash.slice(-8)}
-            </p>
-            <button
-              onClick={copyHash}
-              className="p-1 rounded text-zinc-700 hover:text-zinc-400 transition-colors"
-              title="Copy hash"
+            <span
+              className="text-xs"
+              style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
             >
-              <Copy className="w-3 h-3" />
+              {tx.hash.slice(0, 12)}…{tx.hash.slice(-6)}
+            </span>
+            <button
+              onClick={() => onCopy(tx.id, tx.hash!)}
+              className="p-0.5 rounded transition-colors"
+              style={{ color: 'var(--color-ink-faint)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
+              aria-label="Copy transaction hash"
+            >
+              {copied === tx.id ? (
+                <Check className="w-3 h-3" style={{ color: 'var(--color-success)' }} />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
             </button>
             {tx.explorerUrl && (
               <a
                 href={tx.explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                className="text-xs flex items-center gap-0.5 transition-colors"
+                style={{ color: 'var(--color-trust)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
               >
                 Explorer <ExternalLink className="w-3 h-3" />
               </a>
             )}
           </div>
         )}
-
         {tx.error && (
-          <p className="text-xs text-red-400 mt-1 bg-red-400/10 px-2 py-1 rounded">
+          <p
+            className="text-xs mt-1 px-2 py-0.5 rounded"
+            style={{
+              color: 'var(--color-danger)',
+              backgroundColor: 'var(--color-danger-soft)',
+            }}
+          >
             {tx.error}
           </p>
         )}
+      </div>
 
-        <p className="text-xs text-zinc-600 mt-1">{timeStr(tx.createdAt)}</p>
+      {/* Status badge */}
+      <StatusBadge status={tx.status} />
+
+      {/* Status icon */}
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: 'var(--color-surface-sunken)' }}
+      >
+        <StatusIcon
+          className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`}
+          style={{
+            color: tx.status === 'confirmed'
+              ? 'var(--color-success)'
+              : tx.status === 'failed'
+              ? 'var(--color-danger)'
+              : tx.status === 'pending'
+              ? 'var(--color-warning)'
+              : 'var(--color-ink-faint)',
+          }}
+        />
       </div>
     </div>
   );
 }
 
+// ─── Mobile stacked card ──────────────────────────────────────────────────────
+function TxCard({ tx, onCopy, copied }: {
+  tx: TxRecord;
+  onCopy: (id: string, hash: string) => void;
+  copied: string | null;
+}) {
+  const timeStr = (date: Date) =>
+    date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div className="ll-card p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium flex-1" style={{ color: 'var(--color-ink)' }}>
+          {tx.description}
+        </p>
+        <StatusBadge status={tx.status} />
+      </div>
+
+      {tx.hash && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-xs"
+            style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
+          >
+            {tx.hash.slice(0, 16)}…{tx.hash.slice(-8)}
+          </span>
+          <button
+            onClick={() => onCopy(tx.id, tx.hash!)}
+            className="p-0.5 rounded"
+            style={{ color: 'var(--color-ink-faint)' }}
+            aria-label="Copy transaction hash"
+          >
+            {copied === tx.id ? (
+              <Check className="w-3 h-3" style={{ color: 'var(--color-success)' }} />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
+          </button>
+          {tx.explorerUrl && (
+            <a
+              href={tx.explorerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs flex items-center gap-0.5"
+              style={{ color: 'var(--color-trust)' }}
+            >
+              Explorer <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {tx.error && (
+        <p
+          className="text-xs px-2 py-1 rounded"
+          style={{ color: 'var(--color-danger)', backgroundColor: 'var(--color-danger-soft)' }}
+        >
+          {tx.error}
+        </p>
+      )}
+
+      <p className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
+        {timeStr(tx.createdAt)}
+      </p>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function TransactionsPage() {
   const { transactions, clearCompleted } = useTxStore();
+  const [copied, setCopied] = useState<string | null>(null);
+
   const pendingCount = transactions.filter(
     (t) => t.status === 'pending' || t.status === 'processing',
   ).length;
 
+  const handleCopy = (id: string, hash: string) => {
+    navigator.clipboard.writeText(hash);
+    setCopied(id);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   return (
     <div className="container-wide py-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold">Transaction Center</h1>
-          <p className="text-zinc-400 mt-1">
+          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
+            On-chain activity
+          </p>
+          <h1
+            className="type-display-lg mb-1"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            Transaction Center
+          </h1>
+          <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
             {pendingCount > 0 ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--color-trust)' }} />
                 {pendingCount} transaction{pendingCount > 1 ? 's' : ''} in progress
               </span>
             ) : (
@@ -124,7 +254,7 @@ export default function TransactionsPage() {
         </div>
         <button
           onClick={clearCompleted}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-all text-sm w-fit"
+          className="btn-ghost w-fit"
           id="clear-completed-txs-btn"
         >
           <Trash2 className="w-4 h-4" />
@@ -132,44 +262,72 @@ export default function TransactionsPage() {
         </button>
       </div>
 
-      {/* Transaction Legend */}
-      <div className="flex items-center gap-4 mb-8 overflow-x-auto pb-2">
-        {Object.entries(statusConfig).filter(([k]) => k !== 'idle').map(([key, cfg]) => {
-          const Icon = cfg.icon;
-          return (
-            <div key={key} className="flex items-center gap-1.5 whitespace-nowrap">
-              <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
-              <span className="text-xs text-zinc-500">{cfg.label}</span>
+      {/* Desktop table */}
+      {transactions.length === 0 ? (
+        <EmptyState
+          title="No transactions yet"
+          description="Your transaction history will appear here after you interact with the marketplace."
+          icon={
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-trust-soft)' }}
+            >
+              <ArrowLeftRight className="w-7 h-7" style={{ color: 'var(--color-trust)' }} />
             </div>
-          );
-        })}
-      </div>
-
-      {/* Transactions List */}
-      <div className="glass-card p-6">
-        {transactions.length === 0 ? (
-          <div className="text-center py-16">
-            <ArrowLeftRight className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-zinc-400 mb-2">No transactions yet</h3>
-            <p className="text-sm text-zinc-600">
-              Your transaction history will appear here after you interact with the marketplace.
-            </p>
+          }
+        />
+      ) : (
+        <>
+          {/* Desktop table layout */}
+          <div className="ll-card overflow-hidden hidden md:block">
+            {/* Table header */}
+            <div
+              className="grid gap-4 px-4 py-3"
+              style={{
+                gridTemplateColumns: '1fr 2fr auto auto',
+                backgroundColor: 'var(--color-surface-sunken)',
+                borderBottom: '1px solid var(--color-border)',
+              }}
+            >
+              {['Date', 'Description / Hash', 'Status', ''].map((col) => (
+                <span key={col} className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
+                  {col}
+                </span>
+              ))}
+            </div>
+            {/* Rows */}
+            <div className="p-2">
+              {transactions.map((tx) => (
+                <TxRow key={tx.id} tx={tx} onCopy={handleCopy} copied={copied} />
+              ))}
+            </div>
           </div>
-        ) : (
-          transactions.map((tx) => <TxRow key={tx.id} tx={tx} />)
-        )}
-      </div>
 
-      {/* Info Box */}
-      <div className="mt-6 glass-card p-4 border-cyan-500/20 bg-cyan-500/5">
-        <p className="text-sm text-cyan-300 flex items-start gap-2">
-          <RefreshCcw className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>
+          {/* Mobile stacked cards */}
+          <div className="md:hidden space-y-3">
+            {transactions.map((tx) => (
+              <TxCard key={tx.id} tx={tx} onCopy={handleCopy} copied={copied} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Info note */}
+      {transactions.length > 0 && (
+        <div
+          className="mt-6 ll-card p-4 flex items-start gap-3"
+          style={{
+            backgroundColor: 'var(--color-trust-soft)',
+            borderColor: 'rgba(43,58,143,0.15)',
+          }}
+        >
+          <Loader2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-trust)' }} />
+          <p className="type-body-sm" style={{ color: 'var(--color-trust)' }}>
             Transactions are polled every 2 seconds after submission until confirmed or failed.
             Confirmed transactions include a link to the Stellar Explorer.
-          </span>
-        </p>
-      </div>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

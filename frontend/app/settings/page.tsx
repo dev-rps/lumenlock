@@ -1,187 +1,357 @@
 'use client';
 
-import { Settings, Globe, Wallet, Shield, Code2, ExternalLink, ChevronRight, Info } from 'lucide-react';
+import {
+  Settings,
+  Globe,
+  Wallet,
+  Shield,
+  Code2,
+  ExternalLink,
+  Info,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { useWallet } from '../hooks/useWallet';
 import { formatAddress } from '../types';
 import { getNetworkConfig, getContractIds } from '../services/stellar';
+import { useState } from 'react';
 
+// ─── Section wrapper ──────────────────────────────────────────────────────────
+function Section({
+  label,
+  icon: Icon,
+  children,
+}: {
+  label: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className="w-4 h-4" style={{ color: 'var(--color-trust)' }} />
+        <h2 className="type-caption" style={{ color: 'var(--color-ink-muted)' }}>
+          {label}
+        </h2>
+      </div>
+      <div className="ll-card overflow-hidden">{children}</div>
+    </section>
+  );
+}
+
+// ─── Info row ─────────────────────────────────────────────────────────────────
+function InfoRow({
+  label,
+  value,
+  mono,
+  action,
+  last,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  action?: React.ReactNode;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className="flex items-start justify-between gap-4 p-5"
+      style={{ borderBottom: last ? 'none' : '1px solid var(--color-border)' }}
+    >
+      <div className="flex-1 min-w-0">
+        <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+          {label}
+        </p>
+        <p
+          className={`text-sm break-all leading-relaxed ${mono ? '' : ''}`}
+          style={{
+            color: 'var(--color-ink)',
+            fontFamily: mono ? 'var(--font-mono)' : 'var(--font-ui)',
+          }}
+        >
+          {value}
+        </p>
+      </div>
+      {action && <div className="shrink-0 mt-1">{action}</div>}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const { address, walletId, isConnected, connect, disconnect } = useWallet();
+  const { address, walletId, isConnected, connect, disconnect, network } = useWallet();
   const networkConfig = getNetworkConfig();
   const contractIds = getContractIds();
+  const [copied, setCopied] = useState<string | null>(null);
+  const explorerUrl =
+    process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://stellar.expert/explorer/testnet';
 
-  const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://stellar.expert/explorer/testnet';
+  const copyText = (key: string, value: string) => {
+    navigator.clipboard.writeText(value);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  };
 
   return (
     <div className="container-narrow py-12">
-      <h1 className="text-3xl font-bold mb-2">Settings</h1>
-      <p className="text-zinc-400 mb-10">Manage your wallet, network, and app preferences.</p>
+      {/* Header */}
+      <div className="mb-10">
+        <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
+          Configuration
+        </p>
+        <h1
+          className="type-display-lg mb-1"
+          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+        >
+          Settings
+        </h1>
+        <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+          Manage your wallet, network, and app preferences.
+        </p>
+      </div>
 
-      {/* Wallet Section */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Wallet className="w-4 h-4" /> Wallet
-        </h2>
-        <div className="glass-card overflow-hidden">
-          {isConnected && address ? (
-            <>
-              <div className="p-5 border-b border-zinc-800/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-300">Connected Account</p>
-                    <p className="text-xs text-zinc-500 font-mono mt-1">{address}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-xs text-green-400">Connected</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-5 border-b border-zinc-800/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-300">Wallet</p>
-                    <p className="text-xs text-zinc-500 capitalize mt-1">{walletId || 'Unknown'}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-300">View on Explorer</p>
-                    <p className="text-xs text-zinc-500 mt-1">Open account in Stellar Expert</p>
-                  </div>
-                  <a
-                    href={`${explorerUrl}/account/${address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-sm text-violet-400 hover:text-violet-300 transition-colors"
-                  >
-                    Open <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-              <div className="p-5 border-t border-zinc-800/50 bg-red-500/5">
-                <button
-                  onClick={disconnect}
-                  className="text-sm text-red-400 hover:text-red-300 transition-colors font-medium"
-                  id="settings-disconnect-btn"
+      {/* ── Wallet Section ── */}
+      <Section label="Wallet" icon={Wallet}>
+        {isConnected && address ? (
+          <>
+            {/* Connected indicator */}
+            <div
+              className="flex items-start justify-between gap-4 p-5"
+              style={{ borderBottom: '1px solid var(--color-border)' }}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+                  Connected Account
+                </p>
+                <p
+                  className="text-sm break-all leading-relaxed"
+                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
                 >
-                  Disconnect Wallet
-                </button>
+                  {address}
+                </p>
               </div>
-            </>
-          ) : (
-            <div className="p-8 text-center">
-              <p className="text-zinc-400 mb-4">No wallet connected</p>
+              <div className="flex items-center gap-2 shrink-0 mt-1">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: 'var(--color-success)' }}
+                />
+                <span className="type-caption" style={{ color: 'var(--color-success)' }}>
+                  Connected
+                </span>
+              </div>
+            </div>
+
+            {/* Copy address row */}
+            <InfoRow
+              label="Wallet"
+              value={walletId || 'Unknown'}
+              action={
+                <button
+                  onClick={() => copyText('address', address)}
+                  className="btn-ghost"
+                  style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                  aria-label="Copy wallet address"
+                >
+                  {copied === 'address' ? (
+                    <><Check className="w-3.5 h-3.5" style={{ color: 'var(--color-success)' }} /> Copied</>
+                  ) : (
+                    <><Copy className="w-3.5 h-3.5" /> Copy Address</>
+                  )}
+                </button>
+              }
+            />
+
+            {/* Explorer link */}
+            <InfoRow
+              label="View on Explorer"
+              value="Open account in Stellar Expert"
+              action={
+                <a
+                  href={`${explorerUrl}/account/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+                  style={{ color: 'var(--color-trust)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                >
+                  Open <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              }
+              last
+            />
+
+            {/* Disconnect */}
+            <div
+              className="p-5"
+              style={{ borderTop: '1px solid var(--color-border)' }}
+            >
               <button
-                onClick={connect}
-                className="px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all text-sm"
-                id="settings-connect-wallet-btn"
+                onClick={disconnect}
+                className="text-sm font-medium transition-colors"
+                style={{ color: 'var(--color-danger)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#A02020')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-danger)')}
+                id="settings-disconnect-btn"
               >
-                Connect Wallet
+                Disconnect Wallet
               </button>
             </div>
-          )}
-        </div>
-      </section>
+          </>
+        ) : (
+          <div className="p-8 text-center">
+            <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+              No wallet connected
+            </p>
+            <button
+              onClick={connect}
+              className="btn-secondary mx-auto"
+              id="settings-connect-wallet-btn"
+            >
+              <Wallet className="w-4 h-4" />
+              Connect Wallet
+            </button>
+          </div>
+        )}
+      </Section>
 
-      {/* Network Section */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Globe className="w-4 h-4" /> Network
-        </h2>
-        <div className="glass-card overflow-hidden">
-          {[
-            { label: 'Network', value: networkConfig.network },
-            { label: 'RPC Endpoint', value: networkConfig.rpcUrl },
-            { label: 'Horizon', value: networkConfig.horizonUrl },
-            { label: 'Passphrase', value: networkConfig.networkPassphrase.slice(0, 40) + '...' },
-          ].map(({ label, value }) => (
-            <div key={label} className="p-5 border-b border-zinc-800/50 last:border-0">
-              <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
-              <p className="text-sm text-zinc-300 font-mono">{value}</p>
+      {/* ── Network Section ── */}
+      <Section label="Network" icon={Globe}>
+        {[
+          { label: 'Network',    value: networkConfig.network },
+          { label: 'RPC Endpoint', value: networkConfig.rpcUrl, mono: true },
+          { label: 'Horizon',    value: networkConfig.horizonUrl, mono: true },
+          {
+            label: 'Passphrase',
+            value: networkConfig.networkPassphrase.slice(0, 40) + '…',
+            mono: true,
+          },
+        ].map(({ label, value, mono }, i, arr) => (
+          <InfoRow
+            key={label}
+            label={label}
+            value={value}
+            mono={mono}
+            last={i === arr.length - 1}
+          />
+        ))}
+      </Section>
+
+      {/* ── Contracts Section ── */}
+      <Section label="Deployed Contracts" icon={Code2}>
+        {[
+          { label: 'MarketplaceRegistry', id: contractIds.marketplaceRegistry },
+          { label: 'EscrowVault',         id: contractIds.escrowVault },
+        ].map(({ label, id }, i, arr) => (
+          <div
+            key={label}
+            className="flex items-start justify-between gap-4 p-5"
+            style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+                {label}
+              </p>
+              <p
+                className="text-xs break-all leading-relaxed"
+                style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+              >
+                {id || 'Not configured'}
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contracts Section */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Code2 className="w-4 h-4" /> Deployed Contracts
-        </h2>
-        <div className="glass-card overflow-hidden">
-          {[
-            { label: 'MarketplaceRegistry', id: contractIds.marketplaceRegistry },
-            { label: 'EscrowVault', id: contractIds.escrowVault },
-          ].map(({ label, id }) => (
-            <div key={label} className="p-5 border-b border-zinc-800/50 last:border-0">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-zinc-300">{label}</p>
-                  <p className="text-xs text-zinc-500 font-mono mt-1 break-all">{id || 'Not configured'}</p>
-                </div>
-                {id && (
-                  <a
-                    href={`${explorerUrl}/contract/${id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-violet-400 hover:text-violet-300 transition-colors shrink-0"
-                    aria-label={`View ${label} on explorer`}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
+            {id && (
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => copyText(label, id)}
+                  className="p-1.5 rounded transition-colors"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
+                  aria-label={`Copy ${label} contract ID`}
+                >
+                  {copied === label ? (
+                    <Check className="w-3.5 h-3.5" style={{ color: 'var(--color-success)' }} />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                <a
+                  href={`${explorerUrl}/contract/${id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 rounded transition-colors"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
+                  aria-label={`View ${label} on explorer`}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            )}
+          </div>
+        ))}
+      </Section>
 
-      {/* Arbiter Section */}
-      <section className="mb-8">
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-violet-400" /> Arbiter Settings
-        </h2>
-        <div className="glass-card p-5">
-          <p className="text-sm font-medium text-zinc-300">Designated Arbiter Address</p>
-          <p className="text-xs text-zinc-500 font-mono mt-1 break-all">
+      {/* ── Arbiter Section ── */}
+      <Section label="Arbiter Settings" icon={Shield}>
+        <div className="p-5">
+          <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+            Designated Arbiter Address
+          </p>
+          <p
+            className="text-xs break-all leading-relaxed mb-5"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+          >
             {process.env.NEXT_PUBLIC_ARBITER_ADDRESS || 'GBAOLJDF6UDRASQEAY2NEW2D3US3VWZFBJFVIKRWI3KNW6JE35OXCGFC'}
           </p>
-          
-          <div className="mt-4 p-3 bg-violet-500/5 border border-violet-500/10 rounded-xl">
-            <p className="text-xs text-violet-400 leading-relaxed">
-              <strong>Centralization Note:</strong> In this build, a single designated address is pre-seeded as the default Arbiter for dispute resolutions. This is a deliberate centralization tradeoff documented in the SECURITY.md file. Future releases will implement a decentralized multisig/DAO consensus mechanism.
+          <div
+            className="p-3 rounded-lg"
+            style={{
+              backgroundColor: 'var(--color-warning-soft)',
+              border: '1px solid rgba(181,121,10,0.2)',
+            }}
+          >
+            <p className="type-body-sm" style={{ color: 'var(--color-warning)' }}>
+              <strong>Centralization Note:</strong> In this build, a single designated address is
+              pre-seeded as the default Arbiter for dispute resolutions. This is a deliberate
+              centralization tradeoff documented in SECURITY.md. Future releases will implement a
+              decentralized multisig/DAO consensus mechanism.
             </p>
           </div>
         </div>
-      </section>
+      </Section>
 
-      {/* About Section */}
-      <section>
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4 flex items-center gap-2">
-          <Info className="w-4 h-4" /> About
-        </h2>
-        <div className="glass-card p-5">
-          <p className="text-sm text-zinc-400 leading-relaxed">
+      {/* ── About Section ── */}
+      <Section label="About" icon={Info}>
+        <div className="p-5">
+          <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
             LumenLock v1.0.0 — Stellar Orange Belt Level Application.
-            Built with Next.js 15, Soroban smart contracts, and StellarWalletsKit.
+            Built with Next.js 16, Soroban smart contracts, and StellarWalletsKit.
           </p>
-          <div className="flex items-center gap-4 mt-4">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-              className="text-sm text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
-              GitHub <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-            <a href="/ARCHITECTURE.md" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
-              Architecture
-            </a>
-            <a href="/SECURITY.md" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
-              Security
-            </a>
+          <div className="flex items-center gap-5">
+            {[
+              { label: 'GitHub', href: 'https://github.com', external: true },
+              { label: 'Architecture', href: '/ARCHITECTURE.md', external: false },
+              { label: 'Security', href: '/SECURITY.md', external: false },
+            ].map(({ label, href, external }) => (
+              <a
+                key={label}
+                href={href}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
+                className="text-sm font-medium flex items-center gap-1 transition-colors"
+                style={{ color: 'var(--color-trust)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+              >
+                {label}
+                {external && <ExternalLink className="w-3.5 h-3.5" />}
+              </a>
+            ))}
           </div>
         </div>
-      </section>
+      </Section>
     </div>
   );
 }

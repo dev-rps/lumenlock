@@ -5,26 +5,16 @@ import { useWallet } from '../hooks/useWallet';
 import {
   formatAmount,
   formatAddress,
-  getEscrowStateLabel,
   SUPPORTED_TOKENS,
   type ListingData,
 } from '../types';
-import {
-  ShoppingBag,
-  Search,
-  Filter,
-  Plus,
-  Loader2,
-  AlertCircle,
-  Tag,
-  User,
-  Clock,
-  ArrowRight,
-  Milestone,
-} from 'lucide-react';
+import { Search, Plus, Milestone, ArrowRight, User } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
-import type { Metadata } from 'next';
+import { StatusBadge } from '../components/ui/StatusBadge';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorState } from '../components/ui/ErrorState';
 
 function getTokenSymbol(assetAddress: string): string {
   for (const [symbol, info] of Object.entries(SUPPORTED_TOKENS)) {
@@ -33,40 +23,51 @@ function getTokenSymbol(assetAddress: string): string {
   return 'TOKEN';
 }
 
+// ─── Listing Card ─────────────────────────────────────────────────────────────
 function ListingCard({ listing }: { listing: ListingData }) {
   const tokenSymbol = getTokenSymbol(listing.asset);
   const hasMilestones = !!listing.milestone_config;
   const priceDisplay = `${formatAmount(listing.price)} ${tokenSymbol}`;
 
   return (
-    <div className="glass-card p-6 hover:border-zinc-600/80 transition-all duration-300 group hover:-translate-y-1 flex flex-col gap-4">
-      {/* Header */}
+    <div
+      className="ll-card ll-card-hover p-6 flex flex-col gap-4 group"
+      style={{ cursor: 'default' }}
+    >
+      {/* Header row: title + badges */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-zinc-100 truncate group-hover:text-violet-300 transition-colors">
+          <h3
+            className="font-semibold truncate mb-1 transition-colors"
+            style={{
+              fontFamily: 'var(--font-display)',
+              color: 'var(--color-ink)',
+              fontSize: '1.05rem',
+            }}
+          >
             {listing.title}
           </h3>
-          <div className="flex items-center gap-1.5 mt-1">
-            <User className="w-3.5 h-3.5 text-zinc-500" />
-            <span className="text-xs text-zinc-500 font-mono">
+          <div className="flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" style={{ color: 'var(--color-ink-faint)' }} />
+            <span
+              className="text-xs"
+              style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
+            >
               {formatAddress(listing.seller)}
             </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              listing.status === 'Active'
-                ? 'status-active'
-                : listing.status === 'Locked'
-                  ? 'status-locked'
-                  : 'status-completed'
-            }`}
-          >
-            {listing.status}
-          </span>
+          <StatusBadge status={listing.status} />
           {hasMilestones && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 flex items-center gap-1">
+            <span
+              className="badge-base"
+              style={{
+                backgroundColor: 'var(--color-trust-soft)',
+                color: 'var(--color-trust)',
+                border: '1px solid rgba(43,58,143,0.15)',
+              }}
+            >
               <Milestone className="w-3 h-3" />
               Milestones
             </span>
@@ -75,20 +76,34 @@ function ListingCard({ listing }: { listing: ListingData }) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
+      <p
+        className="type-body-sm line-clamp-2 leading-relaxed flex-1"
+        style={{ color: 'var(--color-ink-muted)' }}
+      >
         {listing.description}
       </p>
 
-      {/* Price & CTA */}
-      <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50">
+      {/* Footer: price + CTA */}
+      <div
+        className="flex items-center justify-between pt-4"
+        style={{ borderTop: '1px solid var(--color-border)' }}
+      >
         <div>
-          <p className="text-xs text-zinc-500 mb-0.5">Price</p>
-          <p className="text-xl font-bold gradient-text">{priceDisplay}</p>
+          <p className="type-caption mb-0.5" style={{ color: 'var(--color-ink-faint)' }}>
+            Price
+          </p>
+          <p
+            className="font-semibold text-xl"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+          >
+            {priceDisplay}
+          </p>
         </div>
         {listing.status === 'Active' && (
           <Link
             href={`/marketplace/${listing.listing_id}`}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg brand-gradient text-white text-sm font-medium hover:opacity-90 transition-all"
+            className="btn-primary"
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
           >
             Buy Now
             <ArrowRight className="w-4 h-4" />
@@ -99,78 +114,137 @@ function ListingCard({ listing }: { listing: ListingData }) {
   );
 }
 
+// ─── Skeleton Card ────────────────────────────────────────────────────────────
+function ListingCardSkeleton() {
+  return (
+    <div className="ll-card p-6 space-y-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 space-y-2">
+          <Skeleton height={20} width="75%" />
+          <Skeleton height={14} width="45%" />
+        </div>
+        <Skeleton height={22} width={64} style={{ borderRadius: 9999 }} />
+      </div>
+      <div className="space-y-2">
+        <Skeleton height={14} width="100%" />
+        <Skeleton height={14} width="80%" />
+      </div>
+      <div
+        className="pt-4 flex items-center justify-between"
+        style={{ borderTop: '1px solid var(--color-surface-sunken)' }}
+      >
+        <div className="space-y-1">
+          <Skeleton height={10} width={36} />
+          <Skeleton height={24} width={80} />
+        </div>
+        <Skeleton height={36} width={90} style={{ borderRadius: 8 }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function MarketplacePage() {
   const { data: listings, isLoading, error, refetch } = useActiveListings();
   const { isConnected } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'Active' | 'Locked' | 'Completed'>('all');
 
-  const filtered = listings?.filter((l) =>
-    l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    l.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = listings?.filter((l) => {
+    const matchesSearch =
+      l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      l.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="container-wide py-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-bold">Marketplace</h1>
-          <p className="text-zinc-400 mt-1">
-            {listings?.length ?? 0} active listing{listings?.length !== 1 ? 's' : ''} — all backed by Soroban escrow
+          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
+            P2P Exchange
           </p>
+          <h1
+            className="type-display-lg"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            Marketplace
+          </h1>
+          <div className="mt-1">
+            {isLoading ? (
+              <Skeleton height={16} width={180} />
+            ) : (
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                {listings?.length ?? 0} listing{listings?.length !== 1 ? 's' : ''} — all backed by Soroban escrow
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {isConnected && (
-            <Link
-              href="/dashboard?action=create"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg brand-gradient text-white text-sm font-medium hover:opacity-90 transition-all"
-              id="create-listing-btn"
+        {isConnected && (
+          <Link
+            href="/dashboard?action=create"
+            className="btn-primary w-fit"
+            id="create-listing-btn"
+          >
+            <Plus className="w-4.5 h-4.5" />
+            Create Listing
+          </Link>
+        )}
+      </div>
+
+      {/* Search + Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] shrink-0 pointer-events-none"
+            style={{ color: 'var(--color-ink-faint)' }}
+          />
+          <input
+            type="text"
+            placeholder="Search listings…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="ll-input"
+            style={{ paddingLeft: '2.375rem' }}
+            aria-label="Search marketplace listings"
+            id="marketplace-search"
+          />
+        </div>
+
+        {/* Status filter chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+          {(['all', 'Active', 'Locked', 'Completed'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-150"
+              style={{
+                backgroundColor: statusFilter === s ? 'var(--color-trust-soft)' : 'var(--color-surface)',
+                color: statusFilter === s ? 'var(--color-trust)' : 'var(--color-ink-muted)',
+                border: `1px solid ${statusFilter === s ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
+                fontFamily: 'var(--font-ui)',
+              }}
             >
-              <Plus className="w-4 h-4" />
-              Create Listing
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative mb-8">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-        <input
-          type="text"
-          placeholder="Search listings..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-zinc-900/60 border border-zinc-800 rounded-xl text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 transition-colors"
-          aria-label="Search marketplace listings"
-          id="marketplace-search"
-        />
-      </div>
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass-card p-6 space-y-4">
-              <div className="skeleton h-5 w-3/4" />
-              <div className="skeleton h-4 w-1/2" />
-              <div className="skeleton h-12 w-full" />
-              <div className="skeleton h-8 w-1/3" />
-            </div>
+              {s === 'all' ? 'All' : s}
+            </button>
           ))}
         </div>
-      ) : error ? (
-        <div className="glass-card p-12 text-center">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Failed to load listings</h3>
-          <p className="text-zinc-400 text-sm mb-4">{String(error)}</p>
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors text-sm"
-          >
-            Try Again
-          </button>
+      </div>
+
+      {/* Content states */}
+      {isLoading ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => <ListingCardSkeleton key={i} />)}
         </div>
+      ) : error ? (
+        <ErrorState
+          title="Couldn't load listings"
+          message="Check your connection and try again."
+          onRetry={() => refetch()}
+        />
       ) : filtered && filtered.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((listing) => (
@@ -178,33 +252,31 @@ export default function MarketplacePage() {
           ))}
         </div>
       ) : (
-        <div className="glass-card p-16 text-center">
-          <ShoppingBag className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">
-            {searchQuery ? 'No listings match your search' : 'No listings yet'}
-          </h3>
-          <p className="text-zinc-400 mb-6">
-            {isConnected
-              ? 'Be the first to create a listing!'
-              : 'Connect your wallet to create or buy listings.'}
-          </p>
-          {isConnected ? (
-            <Link
-              href="/dashboard?action=create"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg brand-gradient text-white font-medium hover:opacity-90 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              Create First Listing
-            </Link>
-          ) : (
-            <button
-              onClick={() => {}}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-zinc-700 text-zinc-300 font-medium hover:bg-zinc-800 transition-all"
-            >
-              Connect Wallet
-            </button>
-          )}
-        </div>
+        <EmptyState
+          title={searchQuery ? 'No listings match your search' : 'No listings yet'}
+          description={
+            searchQuery
+              ? 'Try a different search term or clear the filter.'
+              : isConnected
+              ? 'No listings yet — be the first to create one.'
+              : 'Connect your wallet to create or buy listings.'
+          }
+          action={
+            isConnected && !searchQuery ? (
+              <Link href="/dashboard?action=create" className="btn-primary" id="marketplace-create-first-btn">
+                <Plus className="w-4.5 h-4.5" />
+                Create Listing
+              </Link>
+            ) : searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn-ghost"
+              >
+                Clear search
+              </button>
+            ) : undefined
+          }
+        />
       )}
     </div>
   );

@@ -12,13 +12,15 @@ import { useWallet } from '../hooks/useWallet';
 import {
   formatAmount,
   getEscrowStateLabel,
-  getEscrowStateColor,
   getTimeRemaining,
   SUPPORTED_TOKENS,
   type ListingData,
 } from '../types';
-import { Loader2, Shield, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Clock } from 'lucide-react';
 import { useState } from 'react';
+import { StatusBadge } from './ui/StatusBadge';
+import { Skeleton } from './ui/Skeleton';
+import { SealIcon } from './ui/SealIcon';
 
 function getTokenSymbol(assetAddress: string): string {
   for (const [symbol, info] of Object.entries(SUPPORTED_TOKENS)) {
@@ -64,8 +66,16 @@ export function EscrowPanel({ listing, escrowId }: EscrowPanelProps) {
 
   if (isLoading || !escrow) {
     return (
-      <div className="glass-card p-6 flex items-center gap-2 text-zinc-400">
-        <Loader2 className="w-4 h-4 animate-spin" /> Loading escrow #{escrowId.toString()}…
+      <div className="ll-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton height={20} width={120} />
+          <Skeleton height={22} width={80} style={{ borderRadius: 9999 }} />
+        </div>
+        <Skeleton height={16} width="60%" />
+        <div className="flex gap-2">
+          <Skeleton height={36} width={110} style={{ borderRadius: 8 }} />
+          <Skeleton height={36} width={110} style={{ borderRadius: 8 }} />
+        </div>
       </div>
     );
   }
@@ -73,78 +83,199 @@ export function EscrowPanel({ listing, escrowId }: EscrowPanelProps) {
   const timeLeft = getTimeRemaining(escrow.deadline);
 
   return (
-    <div className="glass-card p-6 space-y-4">
+    <div className="ll-card p-6 space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold flex items-center gap-2">
-          <Shield className="w-4 h-4 text-violet-400" />
-          Escrow #{escrow.escrow_id.toString()}
-        </h3>
-        <span className={`text-sm font-medium ${getEscrowStateColor(escrow.state)}`}>
-          {getEscrowStateLabel(escrow.state)}
-        </span>
+        <div className="flex items-center gap-2">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: 'var(--color-trust-soft)' }}
+          >
+            <SealIcon variant="static" size={20} />
+          </div>
+          <h3
+            className="font-semibold"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
+          >
+            Escrow #{escrow.escrow_id.toString()}
+          </h3>
+        </div>
+        <StatusBadge status={escrow.state} />
       </div>
 
-      <p className="text-sm text-zinc-400">
-        Amount: {formatAmount(escrow.amount)} {tokenSymbol}
+      {/* Amount + deadline */}
+      <div className="flex items-center gap-6 flex-wrap">
+        <div>
+          <p className="type-caption mb-0.5" style={{ color: 'var(--color-ink-faint)' }}>
+            Amount
+          </p>
+          <p
+            className="font-semibold text-lg"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+          >
+            {formatAmount(escrow.amount)} {tokenSymbol}
+          </p>
+        </div>
         {!timeLeft.expired && escrow.state === 'Funded' && (
-          <span className="ml-2 text-zinc-500">
-            · Refund in {timeLeft.days}d {timeLeft.hours}h
-          </span>
+          <div>
+            <p className="type-caption mb-0.5" style={{ color: 'var(--color-ink-faint)' }}>
+              Refund window
+            </p>
+            <p className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-warning)' }}>
+              <Clock className="w-3.5 h-3.5" />
+              {timeLeft.days}d {timeLeft.hours}h remaining
+            </p>
+          </div>
         )}
-      </p>
+        {timeLeft.expired && escrow.state === 'Funded' && (
+          <div
+            className="px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5"
+            style={{
+              backgroundColor: 'var(--color-warning-soft)',
+              color: 'var(--color-warning)',
+            }}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Refund window expired
+          </div>
+        )}
+      </div>
 
-      {error && (
-        <p className="text-sm text-red-400 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
-        </p>
+      {/* Confirmation status */}
+      {(escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') && (
+        <div
+          className="flex items-center gap-4 p-3 rounded-lg"
+          style={{ backgroundColor: 'var(--color-surface-sunken)' }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: escrow.buyer_confirmed
+                  ? 'var(--color-success)'
+                  : 'var(--color-border)',
+              }}
+            />
+            <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+              Buyer {escrow.buyer_confirmed ? 'confirmed' : 'pending'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: escrow.seller_confirmed
+                  ? 'var(--color-success)'
+                  : 'var(--color-border)',
+              }}
+            />
+            <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+              Seller {escrow.seller_confirmed ? 'confirmed' : 'pending'}
+            </span>
+          </div>
+        </div>
       )}
 
+      {/* Error */}
+      {error && (
+        <div
+          className="p-3 rounded-lg flex items-start gap-2"
+          style={{ backgroundColor: 'var(--color-danger-soft)' }}
+        >
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-danger)' }} />
+          <p className="type-body-sm" style={{ color: 'var(--color-danger)' }}>
+            {error}
+          </p>
+        </div>
+      )}
+
+      {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
         {isBuyer && escrow.state === 'Created' && (
           <button
             disabled={pending}
             onClick={() => run(() => fundEscrow.mutateAsync({ escrowId }))}
-            className="px-4 py-2 rounded-lg brand-gradient text-white text-sm font-medium disabled:opacity-50"
+            className="btn-primary"
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
           >
-            Fund Escrow
+            {fundEscrow.isPending ? (
+              <><SealIcon variant="loading" size={16} /> Funding…</>
+            ) : (
+              'Fund Escrow'
+            )}
           </button>
         )}
-        {isBuyer && (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') && !escrow.buyer_confirmed && (
-          <button
-            disabled={pending}
-            onClick={() => run(() => confirmBuyer.mutateAsync({ escrowId }))}
-            className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-50"
-          >
-            Confirm Delivery (Buyer)
-          </button>
-        )}
-        {isSeller && (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') && !escrow.seller_confirmed && (
-          <button
-            disabled={pending}
-            onClick={() => run(() => confirmSeller.mutateAsync({ escrowId }))}
-            className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-50"
-          >
-            Confirm Delivery (Seller)
-          </button>
-        )}
+
+        {isBuyer &&
+          (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') &&
+          !escrow.buyer_confirmed && (
+            <button
+              disabled={pending}
+              onClick={() => run(() => confirmBuyer.mutateAsync({ escrowId }))}
+              className="btn-secondary"
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem',
+                backgroundColor: 'var(--color-success-soft)',
+                color: 'var(--color-success)',
+                borderColor: 'rgba(31,138,77,0.3)',
+              }}
+            >
+              {confirmBuyer.isPending ? 'Confirming…' : 'Confirm Delivery (Buyer)'}
+            </button>
+          )}
+
+        {isSeller &&
+          (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') &&
+          !escrow.seller_confirmed && (
+            <button
+              disabled={pending}
+              onClick={() => run(() => confirmSeller.mutateAsync({ escrowId }))}
+              className="btn-secondary"
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem',
+                backgroundColor: 'var(--color-success-soft)',
+                color: 'var(--color-success)',
+                borderColor: 'rgba(31,138,77,0.3)',
+              }}
+            >
+              {confirmSeller.isPending ? 'Confirming…' : 'Confirm Delivery (Seller)'}
+            </button>
+          )}
+
         {isBuyer && escrow.state === 'Funded' && timeLeft.expired && (
           <button
             disabled={pending}
             onClick={() => run(() => claimRefund.mutateAsync({ escrowId }))}
-            className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm disabled:opacity-50"
+            className="btn-ghost"
+            style={{
+              padding: '0.5rem 1rem',
+              fontSize: '0.875rem',
+              color: 'var(--color-warning)',
+              borderColor: 'rgba(181,121,10,0.3)',
+            }}
           >
-            Claim Refund
+            {claimRefund.isPending ? 'Processing…' : 'Claim Refund'}
           </button>
         )}
-        {(isBuyer || isSeller) && (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') && (
-          <button
-            disabled={pending}
-            onClick={() => run(() => raiseDispute.mutateAsync({ escrowId }))}
-            className="px-4 py-2 rounded-lg border border-red-500/40 text-red-400 text-sm disabled:opacity-50"
-          >
-            Raise Dispute
-          </button>
-        )}
+
+        {(isBuyer || isSeller) &&
+          (escrow.state === 'Funded' || escrow.state === 'PartiallyReleased') && (
+            <button
+              disabled={pending}
+              onClick={() => run(() => raiseDispute.mutateAsync({ escrowId }))}
+              className="btn-ghost"
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem',
+                color: 'var(--color-danger)',
+                borderColor: 'rgba(194,59,59,0.3)',
+              }}
+            >
+              {raiseDispute.isPending ? 'Raising…' : 'Raise Dispute'}
+            </button>
+          )}
       </div>
     </div>
   );

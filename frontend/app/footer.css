@@ -1,0 +1,15 @@
+/* Footer-specific link styles (Server Component safe — no JS event handlers needed) */
+.ll-footer-link {
+  font-size: 0.875rem;
+  color: var(--color-ink-faint);
+  transition: color 0.15s ease;
+  text-decoration: none;
+}
+
+.ll-footer-link:hover {
+  color: var(--color-ink-muted);
+}
+
+.ll-footer-link--stellar:hover {
+  color: var(--color-trust);
+}
