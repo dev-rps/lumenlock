@@ -22,7 +22,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown,wasm32v1-none
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -32,6 +32,10 @@ jobs:
             ~/.cargo/git
             contracts/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build marketplace registry WASM (required by contractimport!)
+        working-directory: contracts
+        run: cargo build --target wasm32v1-none --release --package lumenlock-marketplace-registry
 
       - name: Run contract tests
         working-directory: contracts
