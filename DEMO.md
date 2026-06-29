@@ -1,46 +1,60 @@
-# LumenLock — Interactive Walkthrough & Demo Guide
+# LumenLock — Walkthrough & Demo Guide
 
-> **Soroban Escrow Protocol Demonstration**
-> 
-> This document guides judges and auditors through step-by-step testing of the LumenLock smart contracts and user interface on the Stellar Testnet.
+> **Stellar Soroban Escrow Protocol Demonstration**
+>
+> Welcome to the LumenLock Interactive Walkthrough! This guide is designed for judges, auditors, and developers to easily verify the end-to-end functionality of the LumenLock protocol on the Stellar Testnet.
 
 ---
 
-## 🎥 Demo Video Storyboard (Under 3 Minutes)
+## 📽️ Demo Video & Storyboard
 
-Below is the structured script and storyboard for a recording of the LumenLock application in action.
+### Walkthrough Video
+Below is the video demonstration showcasing the mobile-responsive user interface, Freighter wallet connection, and active escrow flows.
 
-[![LumenLock Video Walkthrough](https://img.youtube.com/vi/placeholder/0.jpg)](https://www.youtube.com/watch?v=placeholder)
-*(Click above to view the placeholder video link for the demo walkthrough)*
+https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1
 
-### Storyboard Breakdown (180 Seconds Total)
+*(If the video does not render, you can access it directly via [GitHub Video Link](https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1))*
 
-| Time | Scene | Audio Script / Voiceover | Focus Area |
+### Video Storyboard Breakdown (3 Minutes)
+
+| Time | Scene | Voiceover Script | Feature / Focus Area |
 |---|---|---|---|
-| **0:00 - 0:30** | **Landing & Connect** | *"Welcome to LumenLock. We are looking at a trustless P2P marketplace built on Stellar. First, we connect our wallet using Freighter on the Testnet..."* | Hero banner, connecting Freighter via StellarWalletsKit |
-| **0:30 - 1:15** | **Buyer Escrow Flow** | *"We select a digital product listed by a seller. As a buyer, we click 'Buy with Escrow' which constructs the open_escrow transaction. Once signed, we fund it by locking our XLM/USDC directly into the contract vault..."* | Marketplace page, opening escrow, funding transaction toast |
-| **1:15 - 2:00** | **Seller Confirmation** | *"Switching to the seller's view on the dashboard, we see the escrow is funded. Once the digital asset is delivered, both parties independently confirm. The vault automatically releases the funds to the seller..."* | Dashboard view, confirm actions, auto-release trigger |
-| **2:00 - 2:40** | **Disputes & Refunds** | *"If a dispute arises, the buyer can raise a dispute, freezing the funds. The designated arbiter can resolve it. If the seller goes silent, a full refund is claimable after the 7-day deadline..."* | Dispute freezing, refund timers, admin/arbiter resolutions |
-| **2:40 - 3:00** | **Explorer & Feeds** | *"Every state transition is audited. We can see live contract events streaming in real-time in the Activity Feed, and transaction hashes in the Transaction Center..."* | Activity Feed ledger events, Transaction Center ledger links |
+| **0:00 - 0:30** | **Landing & Wallet Connection** | *"Welcome to LumenLock, a trustless P2P marketplace built on Stellar. We begin by connecting our Freighter wallet on the Testnet..."* | Hero banner, connecting Freighter via StellarWalletsKit |
+| **0:30 - 1:15** | **Listing & Escrow Creation** | *"As a buyer, we browse active listings and choose to buy via Escrow. We invoke the `open_escrow` transaction and sign it. Once created, we fund the vault by locking our tokens directly into the EscrowVault smart contract..."* | Marketplace page, opening escrow, funding transaction toast |
+| **1:15 - 2:00** | **Bilateral Confirmation** | *"The seller delivers the digital asset. Once both the buyer and seller confirm delivery, the vault automatically releases the locked funds to the seller. Safe, trustless, and immediate..."* | Dashboard views, confirm actions, auto-release trigger |
+| **2:00 - 2:40** | **Dispute & Arbiter Resolution** | *"In case of disagreement, either party can raise a dispute, freezing all funds. The designated third-party arbiter reviews the case and resolves it, awarding funds to the correct party..."* | Dispute freezing, refund timers, arbiter resolution |
+| **2:40 - 3:00** | **Activity Feed & Ledgers** | *"Every state transition is audited. The live Activity Feed pools contract events in real-time, showing transparency for every step..."* | Event streaming, Transaction Center ledger links |
 
 ---
 
-## 🛠️ Step-by-Step Walkthrough Scripts
+## 📱 Mobile Responsive Interface
 
-You can reproduce these test flows against the deployed testnet contracts.
+LumenLock features a fully responsive, mobile-first design optimized for seamless interactions with Freighter and other Stellar-supported wallets.
 
-### Required Setup
-1. Open [LumenLock Settings Page](file:///settings) and ensure you are connected to **Stellar Testnet**.
-2. Have two funded testnet accounts loaded in your wallet extension:
+<p align="center">
+  <img width="380" alt="LumenLock Mobile Responsive Interface" src="https://github.com/user-attachments/assets/b7a52aed-c1f7-4e41-a44b-74facae7a2d0" />
+</p>
+
+---
+
+## 🛠️ Step-by-Step Test Scripts
+
+Follow these walkthrough scripts to reproduce the core features on either the live deployment or your local environment.
+
+### 📋 Prerequisites & Setup
+
+1. **Install Wallet**: Ensure the [Freighter Wallet extension](https://www.freighter.app/) is installed.
+2. **Network**: Open the [LumenLock Settings Page](https://lumenlock.vercel.app/settings) (or `/settings` locally) and confirm you are connected to **Stellar Testnet**.
+3. **Accounts**: Configure two accounts in Freighter:
    - **Account A (Buyer)**
    - **Account B (Seller)**
-3. Use the Friendbot endpoint to fund the accounts: `https://friendbot.stellar.org/?addr=<your-address>`.
+4. **Funding**: Fund both accounts using [Friendbot](https://friendbot.stellar.org/) (use the Friendbot button in Freighter or copy addresses to the online faucet).
 
 ---
 
 ### Flow 1: Purchase, Deposit, and Release (Happy Path)
 
-*This script tests the complete purchase validation, funds lock-up, mutual confirmation, and payout release.*
+*Validates listing creation, escrow initiation, locking funds in the contract, bilateral confirmation, and automatic payout release.*
 
 ```mermaid
 sequenceDiagram
@@ -64,82 +78,120 @@ sequenceDiagram
     Vault->>Registry: update_listing_status(1, Completed)
 ```
 
-1. **Create Listing**:
-   - Log in as **Account B (Seller)**.
-   - Click **Create Listing** on the Dashboard.
-   - Enter Title: `Premium Soroban Template`, Price: `10 XLM`, select Asset: `XLM`. Click **Submit**.
-   - Verify: A success toast appears. Note the listing ID from the URL or Activity Feed (e.g. `#1`).
-2. **Open Escrow**:
-   - Log in as **Account A (Buyer)**.
-   - Locate the listing in the **Marketplace**. Click on it.
-   - Click **Buy with Escrow**. Sign the transaction in Freighter.
-   - Verify: The listing status changes from `Active` to `Locked` in the UI.
-3. **Deposit Funds**:
-   - Go to your **Dashboard**. Under "Open Escrows as Buyer", click **Fund Escrow**.
-   - Sign the transaction. This transfers 10 XLM from your wallet to the Vault smart contract.
-   - Verify: Escrow state updates to `Awaiting Confirmation` and a success toast appears.
-4. **Buyer Confirmation**:
-   - As **Account A (Buyer)**, click **Confirm Delivery**.
-   - Sign the transaction.
-   - Verify: Status updates showing "Buyer Confirmed". Funds remain locked.
-5. **Seller Confirmation & Release**:
-   - Log in as **Account B (Seller)**. Go to the **Dashboard**.
-   - Locate the listing. Click **Confirm Delivery**.
-   - Sign the transaction.
-   - Verify: The Vault contract automatically releases the 10 XLM to Account B. Listing status changes to `Completed`.
+#### Step 1: Create Listing (Seller)
+1. In Freighter, switch to **Account B (Seller)**.
+2. Navigate to the **Create Listing** page.
+3. Enter `Premium Soroban Template` as Title, `10 XLM` as Price, and select **XLM (Native)**. Click **Submit**.
+4. > [!NOTE]
+   > A success toast will appear. Look at the **Activity Feed** or the top of the **Marketplace** to find the new listing and note its ID (e.g., `#1`).
+
+#### Step 2: Open Escrow (Buyer)
+1. Switch Freighter to **Account A (Buyer)**.
+2. Go to the **Marketplace** page, locate Listing `#1`, and click to open its details.
+3. Click **Buy with Escrow** and sign the transaction via Freighter.
+4. > [!NOTE]
+   > The listing status will update from `Active` to `Locked` in the interface, preventing other buyers from interacting with it.
+
+#### Step 3: Deposit & Lock Funds (Buyer)
+1. Go to your **Dashboard** as **Account A (Buyer)**.
+2. Locate the escrow under **Open Escrows (Buyer)** and click **Fund Escrow**.
+3. Sign the transaction in Freighter. This transfers `10 XLM` into the `EscrowVault` smart contract.
+4. > [!NOTE]
+   > The escrow state will update to `Funded`. The tokens are now safely held by the contract.
+
+#### Step 4: Confirm Delivery (Buyer)
+1. Once the seller delivers the product/service, click **Confirm Delivery** on the escrow details page as **Account A**.
+2. Sign the transaction.
+3. > [!NOTE]
+   > The escrow status updates to reflect that the Buyer has confirmed. The funds remain safely locked in the vault.
+
+#### Step 5: Confirm & Release Funds (Seller)
+1. Switch Freighter to **Account B (Seller)**.
+2. Go to your **Dashboard** under **Open Escrows (Seller)**.
+3. Click **Confirm Delivery** on the escrow and sign the transaction.
+4. > [!IMPORTANT]
+   > Once both parties have confirmed, the `EscrowVault` contract automatically triggers the release of the `10 XLM` directly to the Seller's address. The listing status updates to `Completed`.
 
 ---
 
-### Flow 2: Timeout Refund
+### Flow 2: Timeout Refund Guarantee
 
-*This script tests the safety guarantee that buyer funds cannot be locked indefinitely if the seller fails to deliver.*
+*Validates that buyer funds cannot be held indefinitely if the seller fails to deliver or communicate.*
 
-1. **Open & Fund Escrow**:
-   - As **Account A (Buyer)**, open and fund an escrow for listing `#2` (Price: `5 XLM`).
-   - Verify: Escrow is in the `Funded` state.
-2. **Wait for Deadline**:
-   - For testing purposes, the contract deadline is configured to 7 days. On local testnets or sandboxes, this can be accelerated.
-   - Wait until the deadline has elapsed (timestamp > current block time).
+1. **Initiate Escrow**:
+   - As **Account A (Buyer)**, open and fund an escrow for listing `#2` (e.g. price `5 XLM`).
+   - Confirm that the status updates to `Funded`.
+2. **Elapse Deadline**:
+   - The contract enforces a configurable deadline (defaulting to 7 days). On sandbox/local networks, this can be accelerated.
+   - Wait until the block timestamp exceeds the deadline timestamp.
 3. **Claim Refund**:
-   - As **Account A (Buyer)**, open the Escrow detail page.
-   - The **Claim Refund** button is now active. Click it and sign the transaction.
-   - Verify: The Vault contract returns the `5 XLM` to Account A. Escrow status changes to `Refunded`.
+   - As **Account A (Buyer)**, go to the escrow details page.
+   - The **Claim Refund** button will now be active. Click it and sign the transaction in Freighter.
+   - > [!IMPORTANT]
+     > The `EscrowVault` smart contract verifies the timeout, processes the refund, and returns the `5 XLM` to Account A. The status updates to `Refunded`.
 
 ---
 
 ### Flow 3: Dispute Freezing & Arbiter Resolution
 
-*This script tests dispute escalation, lock-up verification, and final resolution by the third-party arbiter.*
+*Validates dispute escalation, locking up the vault funds, and resolution by a trusted third-party arbiter.*
 
-1. **Raise Dispute**:
-   - As **Account A (Buyer)**, with an escrow in the `Funded` state, click **Raise Dispute** (e.g., due to non-delivery or invalid files).
+1. **Raise Dispute (Buyer or Seller)**:
+   - With an escrow in the `Funded` state, if an issue arises (e.g., non-delivery, description mismatch), click **Raise Dispute** on the escrow details page.
    - Sign the transaction.
-   - Verify: Escrow status changes to `Under Dispute` (Disputed). All release and refund functions are frozen.
-2. **Arbiter Review**:
-   - Log in as the **Arbiter Account** (configured during deployment).
-   - Navigate to the disputed escrow ID.
-3. **Resolve Dispute**:
-   - Select **Resolve to Seller** or **Resolve to Buyer**.
-   - Sign the transaction.
-   - Verify: Funds are automatically sent to the selected winner. Escrow state updates to `Resolved`.
+   - > [!WARNING]
+     > The escrow status changes to `Under Dispute`. All direct refund and release actions are instantly frozen.
+2. **Access Arbiter Panel**:
+   - Switch Freighter to the designated **Arbiter Account** (`GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W` on Testnet, or the configured admin/arbiter key on local networks).
+   - Navigate to the disputed escrow ID details.
+3. **Arbiter Decision**:
+   - The Arbiter reviews the transaction history and chooses either **Resolve to Buyer** or **Resolve to Seller**.
+   - Click the button and sign the transaction.
+   - > [!IMPORTANT]
+     > The contract processes the payout to the winner chosen by the arbiter and updates the escrow status to `Resolved`.
 
 ---
 
-## 📷 Screenshots Directory Reference
+## ⚙️ CI/CD & Testing Verification
 
-Below is a reference guide for the expected screenshots when validating the frontend layout.
+LumenLock includes automated pipelines and complete test suites that ensure code safety and deployment stability.
 
-### `Screenshots/01_marketplace.png`
-- **Focus**: The main marketplace grid showing active listings, prices, titles, and tags indicating if milestone-based releases are enabled. Includes search filtering in action.
+### CI/CD Pipeline
+Continuous Integration via GitHub Actions automatically builds the Rust contracts, runs unit tests, validates TypeScript types, runs Vitest suites, and deploys frontend changes to Vercel on commits to the main branch.
 
-### `Screenshots/02_funding_flow.png`
-- **Focus**: The modal dialog where the buyer signs the Freighter transaction to initiate the fund transfers into the Vault. Shows the success toast banner.
+![GitHub Actions CI/CD Pipeline](./docs/assets/github_actions_cicd.png)
 
-### `Screenshots/03_activity_feed.png`
-- **Focus**: The real-time ledger poller showing contract events like `escrow_opened`, `escrow_funded`, and `funds_released` scrolling into view as they occur on-chain.
+### Rust & Vitest Test Suites
+All smart contract logic and frontend components are backed by automated tests.
 
-### `Screenshots/04_transaction_center.png`
-- **Focus**: The list of all submitted transactions showing processing states, error descriptions, and explorer link buttons.
+![Passing Test Outputs](./docs/assets/test_output_cli.png)
 
-### `Screenshots/05_dispute_view.png`
-- **Focus**: The detail view of an escrow in `Disputed` state showing warning banners, frozen action buttons, and arbiter resolution panel options.
+Run them locally:
+```bash
+# Contract unit tests (Rust)
+cd contracts
+cargo test --all
+
+# Frontend unit tests (Vitest)
+cd frontend
+npm run test
+```
+
+---
+
+## 📜 Deployed Testnet References
+
+Below are the official contract addresses and accounts on Stellar Testnet for testing.
+
+| Component / Contract | Stellar Testnet Address | Explorer Link |
+|---|---|---|
+| **MarketplaceRegistry** | `CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP` | [View Contract](https://stellar.expert/explorer/testnet/contract/CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP) |
+| **EscrowVault** | `CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP` | [View Contract](https://stellar.expert/explorer/testnet/contract/CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP) |
+| **Admin Account** | `GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH` | [View Account](https://stellar.expert/explorer/testnet/account/GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH) |
+| **Arbiter Account** | `GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W` | [View Account](https://stellar.expert/explorer/testnet/account/GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W) |
+| **XLM Token (Native)** | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` | [View Contract](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC) |
+| **USDC Token (Testnet)** | `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA` | [View Contract](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
+
+---
+
+*LumenLock — Secure, trustless, and decentralized escrow payments for the Stellar Network.*
