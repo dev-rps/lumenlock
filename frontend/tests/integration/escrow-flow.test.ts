@@ -117,7 +117,7 @@ describe.skipIf(SKIP)('Integration: Full Escrow Flow (Testnet)', () => {
   it('should create a listing', async () => {
     // For integration tests we use XLM (native) as the token
     // The SAC address for XLM on testnet
-    const XLM_SAC = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCAM';
+    const XLM_SAC = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
 
     listingId = BigInt(await invokeContract(
       sellerKeypair,

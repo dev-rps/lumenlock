@@ -39,7 +39,8 @@ const eventConfig: Record<
   listing_status_updated: { label: 'Listing Updated',   icon: RefreshCcw,    bgColor: 'var(--color-surface-sunken)', iconColor: 'var(--color-ink-faint)' },
 };
 
-function timeAgo(date: Date): string {
+function timeAgo(dateVal: Date | string): string {
+  const date = typeof dateVal === 'string' ? new Date(dateVal) : dateVal;
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;

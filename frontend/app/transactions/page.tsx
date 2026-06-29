@@ -35,13 +35,15 @@ function TxRow({ tx, onCopy, copied }: {
   const StatusIcon = statusIcon[tx.status];
   const isProcessing = tx.status === 'processing';
 
-  const timeStr = (date: Date) =>
-    date.toLocaleString(undefined, {
+  const timeStr = (dateVal: Date | string) => {
+    const date = typeof dateVal === 'string' ? new Date(dateVal) : dateVal;
+    return date.toLocaleString(undefined, {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
 
   return (
     <div
@@ -150,8 +152,15 @@ function TxCard({ tx, onCopy, copied }: {
   onCopy: (id: string, hash: string) => void;
   copied: string | null;
 }) {
-  const timeStr = (date: Date) =>
-    date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const timeStr = (dateVal: Date | string) => {
+    const date = typeof dateVal === 'string' ? new Date(dateVal) : dateVal;
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   return (
     <div className="ll-card p-4 space-y-3">

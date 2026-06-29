@@ -149,7 +149,7 @@ async function buildContractTx(
 
   // Assemble the transaction with simulation data
   const assembled = rpc.assembleTransaction(tx, simulation);
-  return (assembled as any).toXDR();
+  return assembled.build().toXDR();
 }
 
 // ─── MarketplaceRegistry Contract Calls ─────────────────────────────────────
