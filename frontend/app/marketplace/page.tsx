@@ -242,7 +242,7 @@ export default function MarketplacePage() {
       ) : error ? (
         <ErrorState
           title="Couldn't load listings"
-          message="Check your connection and try again."
+          message={error instanceof Error ? error.message : "Check your connection and try again."}
           onRetry={() => refetch()}
         />
       ) : filtered && filtered.length > 0 ? (

@@ -109,7 +109,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
         </Link>
         <ErrorState
           title="Listing not found"
-          message="This listing may not exist or has been removed."
+          message={error instanceof Error ? error.message : "This listing may not exist or has been removed."}
         />
       </div>
     );
