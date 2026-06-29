@@ -111,5 +111,5 @@ export function parseContractError(error: unknown): string {
     if (pattern.test(msg)) return message;
   }
 
-  return isDev ? msg : 'An error occurred. Please try again.';
+  return msg || 'An error occurred. Please try again.';
 }

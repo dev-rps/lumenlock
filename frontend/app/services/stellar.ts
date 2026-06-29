@@ -130,19 +130,27 @@ export async function submitAndWaitForTransaction(
 
   while (attempts < maxAttempts) {
     await new Promise((r) => setTimeout(r, pollInterval));
-    const result = await server.getTransaction(hash);
+    try {
+      const result = await server.getTransaction(hash);
 
-    if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-      const success = result as rpc.Api.GetSuccessfulTransactionResponse;
-      return {
-        txHash: success.txHash || hash,
-        returnValue: success.returnValue
-          ? scValToNative(success.returnValue)
-          : null,
-      };
-    }
-    if (result.status === rpc.Api.GetTransactionStatus.FAILED) {
-      throw new Error(`Transaction failed: ${result.resultXdr}`);
+      if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+        const success = result as rpc.Api.GetSuccessfulTransactionResponse;
+        return {
+          txHash: success.txHash || hash,
+          returnValue: success.returnValue
+            ? scValToNative(success.returnValue)
+            : null,
+        };
+      }
+      if (result.status === rpc.Api.GetTransactionStatus.FAILED) {
+        throw new Error(`Transaction failed: ${result.resultXdr}`);
+      }
+    } catch (err) {
+      // Do not abort the polling loop on transient network errors. Warn and retry.
+      logger.warn('stellar.submit.pollError', { hash, attempt: attempts, error: String(err) });
+      if (err instanceof Error && err.message.includes('Transaction failed:')) {
+        throw err;
+      }
     }
     // NOT_FOUND = still pending
     attempts++;
