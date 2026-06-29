@@ -44,6 +44,3 @@ lcov.info
 *.tmp
 *.temp
 
-# Local documentation (ignored)
-/DEMO.md
-
