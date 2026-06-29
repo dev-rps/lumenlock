@@ -28,11 +28,13 @@ We have built LumenLock to be fully production-ready, featuring a mobile-respons
 
 #### 📱 Mobile Responsive UI
 Our web application is optimized for mobile devices, supporting native Freighter wallet connections and responsive views for P2P interactions.
-![Mobile Responsive UI](./docs/assets/mobile_ui_screenshot.png)
+
+<img width="759" height="1600" alt="WhatsApp Image 2026-06-30 at 01 50 11" src="https://github.com/user-attachments/assets/b7a52aed-c1f7-4e41-a44b-74facae7a2d0" />
 
 #### 📽️ Demo Video
 Here is a 1-2 minute video walk-through demonstrating mobile navigation and wallet interactions.
-![LumenLock Mobile Demo Video](./docs/assets/lumenlock_mobile_demo.webp)
+
+https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1
 
 #### ⚙️ CI/CD Pipeline
 Continuous Integration via GitHub Actions automatically builds the Rust contracts, runs cargo tests, validates TypeScript types, runs Vitest tests, and deploys.
