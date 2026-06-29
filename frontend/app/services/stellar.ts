@@ -147,9 +147,33 @@ export async function submitAndWaitForTransaction(
   const maxStatusAttempts = 40; // 40 status checks
   const maxNetworkErrors = 15;  // Up to 15 network errors allowed
   const pollInterval = 3000;    // 3 seconds interval to prevent rate-limiting
+  let loopCount = 0;
 
   while (statusAttempts < maxStatusAttempts && networkErrors < maxNetworkErrors) {
     await new Promise((r) => setTimeout(r, pollInterval));
+    loopCount++;
+
+    // Failsafe Horizon Fallback: If Soroban RPC is lagging, rate-limiting, or throws a runtime error in-browser,
+    // check Horizon (after 3 attempts / ~9 seconds) to immediately detect and confirm successful transactions.
+    if (loopCount > 3) {
+      try {
+        const hzUrl = `${config.horizonUrl}/transactions/${hash}`;
+        const hzRes = await fetch(hzUrl);
+        if (hzRes.ok) {
+          const hzData = await hzRes.json();
+          if (hzData.successful) {
+            logger.info('stellar.submit.horizonFallback.success', { hash });
+            return {
+              txHash: hash,
+              returnValue: null,
+            };
+          }
+        }
+      } catch (hzErr) {
+        logger.warn('stellar.submit.horizonFallback.error', { error: String(hzErr) });
+      }
+    }
+
     try {
       const result = await server.getTransaction(hash);
 
@@ -167,27 +191,6 @@ export async function submitAndWaitForTransaction(
       }
       // If status is pending (NOT_FOUND)
       statusAttempts++;
-
-      // Horizon Fallback: If Soroban RPC is lagging or rate-limiting (NOT_FOUND),
-      // check Horizon to see if the transaction has already closed in a ledger.
-      if (statusAttempts > 5 && statusAttempts % 3 === 0) {
-        try {
-          const hzUrl = `${config.horizonUrl}/transactions/${hash}`;
-          const hzRes = await fetch(hzUrl);
-          if (hzRes.ok) {
-            const hzData = await hzRes.json();
-            if (hzData.successful) {
-              logger.info('stellar.submit.horizonFallback.success', { hash });
-              return {
-                txHash: hash,
-                returnValue: null,
-              };
-            }
-          }
-        } catch (hzErr) {
-          logger.warn('stellar.submit.horizonFallback.error', { error: String(hzErr) });
-        }
-      }
     } catch (err) {
       if (err instanceof Error && err.message.includes('Transaction failed:')) {
         throw err;
