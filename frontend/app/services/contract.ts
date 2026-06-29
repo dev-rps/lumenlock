@@ -137,7 +137,7 @@ async function buildContractTx(
 
   const contract = new Contract(contractId);
   const tx = new TransactionBuilder(account, {
-    fee: BASE_FEE,
+    fee: '5000',
     networkPassphrase: config.networkPassphrase,
   })
     .addOperation(contract.call(method, ...args))
