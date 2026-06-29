@@ -19,6 +19,7 @@ import {
   scValToNative,
   xdr,
 } from '@stellar/stellar-sdk';
+import { logger } from './observability';
 
 /** Network configuration */
 export interface NetworkConfig {
