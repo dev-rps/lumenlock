@@ -125,11 +125,13 @@ export async function submitAndWaitForTransaction(
 
   // Poll for confirmation
   const hash = sendResult.hash;
-  let attempts = 0;
-  const maxAttempts = 30;
-  const pollInterval = 2000; // 2 seconds
+  let statusAttempts = 0;
+  let networkErrors = 0;
+  const maxStatusAttempts = 40; // 40 status checks
+  const maxNetworkErrors = 15;  // Up to 15 network errors allowed
+  const pollInterval = 3000;    // 3 seconds interval to prevent rate-limiting
 
-  while (attempts < maxAttempts) {
+  while (statusAttempts < maxStatusAttempts && networkErrors < maxNetworkErrors) {
     await new Promise((r) => setTimeout(r, pollInterval));
     try {
       const result = await server.getTransaction(hash);
@@ -146,18 +148,18 @@ export async function submitAndWaitForTransaction(
       if (result.status === rpc.Api.GetTransactionStatus.FAILED) {
         throw new Error(`Transaction failed: ${result.resultXdr}`);
       }
+      // If status is pending (NOT_FOUND)
+      statusAttempts++;
     } catch (err) {
-      // Do not abort the polling loop on transient network errors. Warn and retry.
-      logger.warn('stellar.submit.pollError', { hash, attempt: attempts, error: String(err) });
       if (err instanceof Error && err.message.includes('Transaction failed:')) {
         throw err;
       }
+      networkErrors++;
+      logger.warn('stellar.submit.pollError', { hash, statusAttempts, networkErrors, error: String(err) });
     }
-    // NOT_FOUND = still pending
-    attempts++;
   }
 
-  throw new Error(`Transaction confirmation timeout after ${maxAttempts * pollInterval / 1000}s. Hash: ${hash}`);
+  throw new Error(`Transaction confirmation timeout. Checked status ${statusAttempts} times with ${networkErrors} network errors. Hash: ${hash}`);
 }
 
 /**
