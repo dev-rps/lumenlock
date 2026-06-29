@@ -35,6 +35,11 @@ import { logger } from './observability';
 
 function unwrapEnum<T extends string>(value: unknown): T {
   if (typeof value === 'string') return value as T;
+  
+  if (Array.isArray(value)) {
+    if (typeof value[0] === 'string') return value[0] as T;
+  }
+
   if (value && typeof value === 'object') {
     const [key] = Object.keys(value as Record<string, unknown>);
     if (key) return key as T;
@@ -44,12 +49,32 @@ function unwrapEnum<T extends string>(value: unknown): T {
 
 function unwrapOption<T>(value: unknown): T | null {
   if (value == null) return null;
-  if (typeof value === 'object' && value !== null && 'Some' in value) {
-    return (value as { Some: T }).Some;
+  
+  // Array format: ["Some", val] or ["None"]
+  if (Array.isArray(value)) {
+    if (value[0] === 'Some') {
+      return value[1] as T;
+    }
+    if (value[0] === 'None') {
+      return null;
+    }
   }
-  if (typeof value === 'object' && value !== null && 'None' in value) {
+
+  // Object format: { Some: val } or { None: ... }
+  if (typeof value === 'object' && value !== null) {
+    if ('Some' in value) {
+      return (value as { Some: T }).Some;
+    }
+    if ('None' in value) {
+      return null;
+    }
+  }
+
+  // String format: "None"
+  if (value === 'None') {
     return null;
   }
+
   return value as T;
 }
 
@@ -82,16 +107,10 @@ function normalizeListing(raw: Record<string, unknown>): ListingData {
 }
 
 function normalizeEscrow(raw: Record<string, unknown>): EscrowRecord {
-  const milestoneRaw = raw.milestone_percentages;
+  const milestoneRaw = unwrapOption<Iterable<number>>(raw.milestone_percentages);
   let milestonePercentages: number[] | null = null;
   if (milestoneRaw != null) {
-    if (typeof milestoneRaw === 'object' && milestoneRaw !== null && 'Some' in milestoneRaw) {
-      milestonePercentages = Array.from(
-        (milestoneRaw as { Some: Iterable<number> }).Some,
-      ).map(Number);
-    } else if (Array.isArray(milestoneRaw)) {
-      milestonePercentages = milestoneRaw.map(Number);
-    }
+    milestonePercentages = Array.from(milestoneRaw).map(Number);
   }
 
   return {
