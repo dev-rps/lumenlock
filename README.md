@@ -5,14 +5,42 @@
 > _Stellar Orange Belt Level Application — Production-Ready_
 
 ### 🌐 Live Demo & Deployments
-- **Production Web App**: [https://lumenlock.vercel.app](https://lumenlock.vercel.app)
-- **MarketplaceRegistry Contract**: [Stellar.expert Link](https://stellar.expert/explorer/testnet/contract/CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP)
-- **EscrowVault Contract**: [Stellar.expert Link](https://stellar.expert/explorer/testnet/contract/CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP)
 
-### 📚 Quick Links
-- **[walkthrough / demo guide](file:///c:/Users/Ichigo/Desktop/lumenlock/DEMO.md)** — **Judges start here!**
-- **[architecture documentation](file:///c:/Users/Ichigo/Desktop/lumenlock/ARCHITECTURE.md)**
-- **[security & attack surface analysis](file:///c:/Users/Ichigo/Desktop/lumenlock/SECURITY.md)**
+- 🖥️ **Production Web App**: [https://lumenlock.vercel.app](https://lumenlock.vercel.app)
+- 📜 **MarketplaceRegistry Contract**: [`CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP`](https://stellar.expert/explorer/testnet/contract/CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP)
+- 🔒 **EscrowVault Contract**: [`CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP`](https://stellar.expert/explorer/testnet/contract/CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP)
+- 🔑 **Admin Account**: [`GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH`](https://stellar.expert/explorer/testnet/account/GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH)
+- ⚖️ **Arbiter Account**: [`GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W`](https://stellar.expert/explorer/testnet/account/GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W)
+- 🪙 **XLM Token (Native)**: [`CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC)
+- 💵 **USDC Token (Testnet)**: [`CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA)
+
+### 📚 Project Documentation & Guides
+
+| Document | Description | Relative Link |
+| :--- | :--- | :--- |
+| **🚀 Walkthrough / Demo Guide** | **Judges start here!** A step-by-step walkthrough to test the user flow, including listing creation, funding, and dispute resolution. | [DEMO.md](./DEMO.md) |
+| **🏗️ Architecture Documentation** | Detailed design specifications, state transition machines, storage architecture, and WASM upgrade strategy. | [ARCHITECTURE.md](./ARCHITECTURE.md) |
+| **🛡️ Security & Attack Surface** | Threat modeling, access control matrix, reentrancy analysis, and security mitigations. | [SECURITY.md](./SECURITY.md) |
+
+### 🎬 Project Media, CI/CD, & Testing
+
+We have built LumenLock to be fully production-ready, featuring a mobile-responsive interface, integrated unit tests, and continuous integration.
+
+#### 📱 Mobile Responsive UI
+Our web application is optimized for mobile devices, supporting native Freighter wallet connections and responsive views for P2P interactions.
+![Mobile Responsive UI](./docs/assets/mobile_ui_screenshot.png)
+
+#### 📽️ Demo Video
+Here is a 1-2 minute video walk-through demonstrating mobile navigation and wallet interactions.
+![LumenLock Mobile Demo Video](./docs/assets/lumenlock_mobile_demo.webp)
+
+#### ⚙️ CI/CD Pipeline
+Continuous Integration via GitHub Actions automatically builds the Rust contracts, runs cargo tests, validates TypeScript types, runs Vitest tests, and deploys.
+![GitHub Actions CI/CD Pipeline](./docs/assets/github_actions_cicd.png)
+
+#### 🧪 Passing Test Output
+Our comprehensive test suite validates both smart contracts (Rust/Soroban) and frontend components (Vitest). All tests are currently passing successfully.
+![Passing Test Outputs](./docs/assets/test_output_cli.png)
 
 [![PR Checks](https://github.com/dev-rps/lumenlock/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/dev-rps/lumenlock/actions/workflows/pr-checks.yml)
 [![Deploy](https://github.com/dev-rps/lumenlock/actions/workflows/deploy.yml/badge.svg)](https://github.com/dev-rps/lumenlock/actions/workflows/deploy.yml)
@@ -429,14 +457,16 @@ Replace the placeholder addresses below with the output from the deploy script.
 
 ---
 
-## Contract Addresses
+## Contract Addresses & Accounts
 
 ### Testnet Deployment
 
-| Contract | Address | Explorer |
+| Component / Contract | Address | Explorer |
 |---|---|---|
-| MarketplaceRegistry | `CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP` | [View](https://stellar.expert/explorer/testnet/contract/CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP) |
-| EscrowVault | `CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP` | [View](https://stellar.expert/explorer/testnet/contract/CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP) |
+| MarketplaceRegistry Contract | `CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP` | [View](https://stellar.expert/explorer/testnet/contract/CDVABICJWCR6AMMCF3FY55GFVF7CIPRTY6IA53YLWF65RYSZN5DNO3GP) |
+| EscrowVault Contract | `CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP` | [View](https://stellar.expert/explorer/testnet/contract/CBXIOF3DI2FHF3IVD6AMB552OFZCTWSQWM4RYNARLPEMAJD4SXLI3WAP) |
+| Admin Account | `GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH` | [View](https://stellar.expert/explorer/testnet/account/GCO6OXKDFHGBZDNY4GBBJCB7HECZTGPWMTXPQE35RYXI5Q2A42JENFYH) |
+| Arbiter Account | `GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W` | [View](https://stellar.expert/explorer/testnet/account/GDBKQ2ACDAVI54RUAI2Q6QJQOBIC7NG2P77WWY27YDYFSZMU64BYSZ5W) |
 | XLM Token (Native) | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` | [View](https://stellar.expert/explorer/testnet/contract/CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC) |
 | USDC Token (Testnet) | `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA` | [View](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA) |
 
