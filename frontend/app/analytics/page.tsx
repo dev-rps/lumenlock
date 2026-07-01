@@ -63,7 +63,6 @@ function DonutChart({
           style={{ transition: 'stroke-dasharray 0.4s ease' }}
         />
       ))}
-      {/* Center label */}
       <text
         x={cx}
         y={cy}
@@ -98,45 +97,43 @@ function StatCard({
   iconColor: string;
 }) {
   return (
-    /*
-     * Internal layout: left-aligned vertical flex.
-     * icon → value → title → description
-     * All 4 elements share the same left edge.
-     * Stack gaps use the --stack-xs (8px) rhythm scale.
-     */
     <div
       className="ll-card flex flex-col"
       style={{ padding: 'var(--spacing-3)', alignItems: 'flex-start' }}
     >
-      {/* Icon slot */}
       <div
         className="card-slot-marker"
-        style={{ backgroundColor: iconBg, marginBottom: 'var(--stack-sm)' }}
+        style={{ backgroundColor: iconBg }}
       >
         <Icon style={{ width: 18, height: 18, color: iconColor }} />
       </div>
 
-      {/* Value — large mono, same left edge as icon */}
       <span
-        className="font-semibold"
+        className="type-display-lg type-mono"
         style={{
           color: 'var(--color-ink)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '1.75rem',
-          lineHeight: 1.2,
-          marginBottom: 'var(--stack-xs)',
+          marginTop: 'var(--spacing-1)',
+          lineHeight: 1.15,
         }}
       >
         {value}
       </span>
 
-      {/* Title */}
-      <p className="font-medium text-sm" style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}>
-        {title}
-      </p>
+      <div className="card-slot-title" style={{ marginTop: 'var(--spacing-1)' }}>
+        <p className="type-body font-semibold" style={{ color: 'var(--color-ink)' }}>
+          {title}
+        </p>
+      </div>
 
-      {/* Description */}
-      <p className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
+      <p
+        className="type-caption"
+        style={{
+          color: 'var(--color-ink-faint)',
+          textTransform: 'none',
+          letterSpacing: 0,
+          marginTop: 'var(--spacing-1)',
+        }}
+      >
         {description}
       </p>
     </div>
@@ -247,7 +244,6 @@ export default function AnalyticsPage() {
     },
   ];
 
-  // Event type breakdown
   const eventBreakdown = Object.entries(
     events.reduce<Record<string, number>>((acc, e) => {
       acc[e.type] = (acc[e.type] || 0) + 1;
@@ -257,7 +253,6 @@ export default function AnalyticsPage() {
 
   const maxCount = eventBreakdown[0]?.[1] || 1;
 
-  // Status distribution for donut
   const statusCounts = {
     Active:    listings?.filter((l) => l.status === 'Active').length ?? 0,
     Completed: listings?.filter((l) => l.status === 'Completed').length ?? 0,
@@ -272,15 +267,15 @@ export default function AnalyticsPage() {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="container-wide py-12">
+    <div className="container-wide" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Header */}
-      <div className="mb-10">
-        <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
-          Insights
+      <div style={{ marginBottom: 'var(--spacing-6)' }}>
+        <p className="type-caption" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-1)' }}>
+          INSIGHTS
         </p>
         <h1
-          className="type-display-lg mb-1"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          className="type-display-lg"
+          style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}
         >
           Analytics
         </h1>
@@ -289,10 +284,10 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      {/* Stats Grid — card-grid enforces equal-height siblings */}
+      {/* Stats Grid */}
       <div
         className="card-grid analytics-stats-grid"
-        style={{ gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-4)' }}
+        style={{ gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-6)' }}
       >
         {stats.map((s) => (
           <StatCard key={s.title} {...s} />
@@ -300,25 +295,19 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Charts row */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid md:grid-cols-3 gap-6" style={{ marginBottom: 'var(--spacing-6)' }}>
         {/* Event breakdown bar chart */}
-        <div className="ll-card p-6 md:col-span-2">
+        <div className="ll-card p-6 flex flex-col md:col-span-2">
           <h2
-            className="type-heading mb-6"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+            className="type-heading"
+            style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-3)' }}
           >
             Event Type Breakdown
           </h2>
           {eventBreakdown.length === 0 ? (
-            /*
-             * Empty state: centered flex block with defined min-height.
-             * Matches the centered empty state pattern used across all pages.
-             */
             <div
+              className="flex items-center justify-center flex-1"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 textAlign: 'center',
                 minHeight: '160px',
               }}
@@ -328,14 +317,14 @@ export default function AnalyticsPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1">
               {eventBreakdown.map(([type, count], i) => (
                 <BarRow
                   key={type}
                   label={type}
                   count={count}
                   max={maxCount}
-                  color={i === 0 ? 'var(--color-trust)' : i === 1 ? 'var(--color-accent)' : 'var(--color-border)'}
+                  color={i === 0 ? 'var(--color-trust)' : i === 1 ? 'var(--color-accent)' : 'var(--color-border-strong)'}
                 />
               ))}
             </div>
@@ -345,13 +334,13 @@ export default function AnalyticsPage() {
         {/* Status donut */}
         <div className="ll-card p-6 flex flex-col">
           <h2
-            className="type-heading mb-6"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+            className="type-heading"
+            style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-3)' }}
           >
             Listing Status
           </h2>
           {donutData.length > 0 ? (
-            <div className="flex flex-col items-center gap-5 flex-1 justify-center">
+            <div className="flex flex-col items-center flex-1 justify-center" style={{ gap: 'var(--spacing-3)' }}>
               <DonutChart data={donutData} size={140} />
               <div className="space-y-2 w-full">
                 {donutData.map((d) => (
@@ -376,8 +365,8 @@ export default function AnalyticsPage() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center flex-1">
-              <p className="type-body-sm text-center" style={{ color: 'var(--color-ink-faint)' }}>
+            <div className="flex items-center justify-center flex-1" style={{ textAlign: 'center' }}>
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-faint)' }}>
                 No listing data yet
               </p>
             </div>
@@ -385,35 +374,33 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Ecosystem info — --stack-xl (64px) top margin to visually separate from charts */}
+      {/* Ecosystem info */}
       <div
         className="ll-card p-6"
         style={{
-          backgroundColor: 'var(--color-trust-soft)',
-          borderColor: 'rgba(43,58,143,0.15)',
-          marginTop: 'var(--stack-xl)',
+          backgroundColor: 'var(--color-surface-raised)',
+          borderColor: 'var(--color-border-strong)',
+          marginTop: 'var(--spacing-6)',
         }}
       >
         <h2
           className="type-heading"
           style={{
-            color: 'var(--color-trust)',
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.1rem',
-            marginBottom: 'var(--stack-md)',
+            color: 'var(--color-accent)',
+            marginBottom: 'var(--spacing-3)',
           }}
         >
           Ecosystem Fit
         </h2>
-        <div className="grid md:grid-cols-2 gap-6 text-sm leading-relaxed" style={{ color: 'var(--color-trust)' }}>
+        <div className="grid md:grid-cols-2" style={{ gap: 'var(--spacing-4)' }}>
           <div>
             <h3
-              className="font-semibold"
-              style={{ fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}
+              className="font-semibold text-sm"
+              style={{ fontFamily: 'var(--font-ui)', color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}
             >
               What Stellar Was Missing
             </h3>
-            <p style={{ opacity: 0.8 }}>
+            <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               Stellar&apos;s native claimable balances support conditional release but not bilateral
               confirmation, dispute freezing, or milestone-based partial releases. There is no
               first-class escrow primitive on Stellar that handles two-sided confirmation with
@@ -422,12 +409,12 @@ export default function AnalyticsPage() {
           </div>
           <div>
             <h3
-              className="font-semibold"
-              style={{ fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}
+              className="font-semibold text-sm"
+              style={{ fontFamily: 'var(--font-ui)', color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}
             >
               What LumenLock Adds
             </h3>
-            <p style={{ opacity: 0.8 }}>
+            <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               LumenLock fills that gap as a reusable Soroban escrow layer. Any marketplace,
               freelance platform, or P2P payment app on Stellar can build on top of these
               two contracts — MarketplaceRegistry + EscrowVault — without re-implementing

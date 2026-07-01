@@ -1,4 +1,4 @@
-/* Footer-specific link styles (Server Component safe — no JS event handlers needed) */
+/* ─── Footer Link Hover Style ─── */
 .ll-footer-link {
   font-size: 0.875rem;
   color: var(--color-ink-faint);
@@ -7,9 +7,9 @@
 }
 
 .ll-footer-link:hover {
-  color: var(--color-ink-muted);
+  color: var(--color-ink);
 }
 
 .ll-footer-link--stellar:hover {
-  color: var(--color-trust);
+  color: var(--color-accent);
 }

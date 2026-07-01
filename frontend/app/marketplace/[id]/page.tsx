@@ -36,29 +36,22 @@ function getTokenSymbol(assetAddress: string): string {
 
 function ListingDetailSkeleton() {
   return (
-    <div className="container-narrow py-12">
-      <Skeleton height={16} width={120} className="mb-8" />
+    <div className="container-narrow" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
+      <Skeleton height={16} width={120} style={{ marginBottom: 'var(--spacing-4)' }} />
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
             <Skeleton height={36} width="70%" />
             <Skeleton height={16} width="40%" />
           </div>
-          <div className="text-right space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
             <Skeleton height={14} width={40} />
             <Skeleton height={48} width={120} />
-            <Skeleton height={16} width={60} />
           </div>
         </div>
-        <div className="ll-card p-6 space-y-3">
+        <div className="ll-card p-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Skeleton height={14} width={80} />
           <Skeleton height={16} width="100%" />
-          <Skeleton height={16} width="88%" />
-          <Skeleton height={16} width="72%" />
-        </div>
-        <div className="ll-card p-6 space-y-3">
-          <Skeleton height={14} width={120} />
-          <Skeleton height={80} width="100%" />
         </div>
       </div>
     </div>
@@ -97,11 +90,11 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
   if (error || !listing) {
     return (
-      <div className="container-narrow py-12">
+      <div className="container-narrow" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
         <Link
           href="/marketplace"
-          className="flex items-center gap-1.5 text-sm mb-8 transition-colors"
-          style={{ color: 'var(--color-ink-faint)' }}
+          className="flex items-center gap-1.5 text-sm transition-colors"
+          style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-4)' }}
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-ink-muted)')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
         >
@@ -109,24 +102,23 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
         </Link>
         <ErrorState
           title="Listing not found"
-          message={error instanceof Error ? error.message : "This listing may not exist or has been removed."}
+          message={error instanceof Error ? error.message : 'This listing may not exist or has been removed.'}
         />
       </div>
     );
   }
 
   const tokenSymbol = getTokenSymbol(listing.asset);
-  const isBuyer = address && address !== listing.seller;
   const isSeller = address === listing.seller;
 
   return (
-    <div className="container-narrow py-12">
+    <div className="container-narrow" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Back link */}
       <Link
         href="/marketplace"
-        className="flex items-center gap-1.5 text-sm mb-8 transition-colors w-fit"
-        style={{ color: 'var(--color-ink-faint)' }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+        className="flex items-center gap-1.5 text-sm transition-colors w-fit"
+        style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-4)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
         onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
       >
         <ArrowLeft className="w-4 h-4" />
@@ -134,9 +126,9 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
       </Link>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6" style={{ marginBottom: 'var(--spacing-4)' }}>
         <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-3 mb-2">
+          <div className="flex flex-wrap items-center gap-3" style={{ marginBottom: 'var(--spacing-1)' }}>
             <h1
               className="type-display-lg"
               style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
@@ -146,7 +138,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             <StatusBadge status={listing.status} />
           </div>
           <div className="flex items-center gap-2">
-            <User className="w-3.5 h-3.5" style={{ color: 'var(--color-ink-faint)' }} />
+            <User style={{ width: 14, height: 14, color: 'var(--color-ink-faint)' }} />
             <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               by{' '}
               <a
@@ -155,32 +147,32 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
                 rel="noopener noreferrer"
                 className="transition-colors"
                 style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-mono)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-soft)')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
               >
                 {formatAddress(listing.seller)}
-                <ExternalLink className="inline w-3 h-3 ml-0.5" />
+                <ExternalLink className="inline ml-0.5" style={{ width: 12, height: 12 }} />
               </a>
             </span>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>Price</p>
+          <p className="type-caption" style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-1)' }}>Price</p>
           <p
-            className="font-bold"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '2.5rem', lineHeight: 1.1 }}
+            className="type-mono"
+            style={{ color: 'var(--color-ink)', fontSize: '2.25rem', fontWeight: 600, lineHeight: 1.1 }}
           >
             {formatAmount(listing.price)}
           </p>
-          <p className="type-body-sm mt-0.5" style={{ color: 'var(--color-ink-muted)' }}>
+          <p className="type-body-sm" style={{ color: 'var(--color-accent)', marginTop: 'var(--spacing-1)' }}>
             {tokenSymbol}
           </p>
         </div>
       </div>
 
       {/* Description */}
-      <div className="ll-card p-6 mb-5">
-        <p className="type-caption mb-3" style={{ color: 'var(--color-ink-faint)' }}>Description</p>
+      <div className="ll-card p-6" style={{ marginBottom: 'var(--spacing-3)' }}>
+        <p className="type-caption" style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-2)' }}>Description</p>
         <p className="type-body whitespace-pre-wrap" style={{ color: 'var(--color-ink)' }}>
           {listing.description}
         </p>
@@ -188,9 +180,9 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Milestones */}
       {listing.milestone_config && (
-        <div className="ll-card p-6 mb-5">
-          <p className="type-caption mb-4 flex items-center gap-2" style={{ color: 'var(--color-ink-faint)' }}>
-            <Milestone className="w-3.5 h-3.5" />
+        <div className="ll-card p-6" style={{ marginBottom: 'var(--spacing-3)' }}>
+          <p className="type-caption flex items-center gap-2" style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-3)' }}>
+            <Milestone style={{ width: 14, height: 14 }} />
             Payment Milestones
           </p>
           <div className="space-y-2">
@@ -206,13 +198,13 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex items-center gap-3">
                   <span
                     className="font-semibold text-sm"
-                    style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-mono)' }}
+                    style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}
                   >
                     {listing.milestone_config!.percentages[i]}%
                   </span>
                   <span className="type-mono-sm" style={{ color: 'var(--color-ink-muted)' }}>
                     = {formatAmount(
-                      listing.price * BigInt(listing.milestone_config!.percentages[i]) / BigInt(100),
+                      (listing.price * BigInt(listing.milestone_config!.percentages[i])) / BigInt(100),
                     )}{' '}
                     {tokenSymbol}
                   </span>
@@ -225,14 +217,15 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Escrow Protection info */}
       <div
-        className="ll-card p-6 mb-5"
+        className="ll-card p-6"
         style={{
-          backgroundColor: 'var(--color-trust-soft)',
-          borderColor: 'rgba(43,58,143,0.2)',
+          backgroundColor: 'var(--color-surface-raised)',
+          borderColor: 'var(--color-border-strong)',
+          marginBottom: 'var(--spacing-3)',
         }}
       >
-        <p className="type-caption mb-4 flex items-center gap-2" style={{ color: 'var(--color-trust)' }}>
-          <Shield className="w-3.5 h-3.5" />
+        <p className="type-caption flex items-center gap-2" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-3)' }}>
+          <Shield style={{ width: 14, height: 14 }} />
           Escrow Protection
         </p>
         <div className="space-y-2">
@@ -244,10 +237,10 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
           ].map((item) => (
             <div key={item} className="flex items-start gap-2.5">
               <CheckCircle2
-                className="w-4 h-4 shrink-0 mt-0.5"
-                style={{ color: 'var(--color-success)' }}
+                className="shrink-0"
+                style={{ width: 16, height: 16, marginTop: 2, color: 'var(--color-success)' }}
               />
-              <span className="type-body-sm" style={{ color: 'var(--color-trust)' }}>
+              <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
                 {item}
               </span>
             </div>
@@ -258,16 +251,17 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
       {/* Feedback message */}
       {actionFeedback && (
         <div
-          className="ll-card p-4 mb-5 flex items-start gap-3"
+          className="ll-card p-4 flex items-start gap-3"
           style={{
             backgroundColor: actionFeedback.type === 'success' ? 'var(--color-success-soft)' : 'var(--color-danger-soft)',
-            borderColor: actionFeedback.type === 'success' ? 'rgba(31,138,77,0.25)' : 'rgba(194,59,59,0.25)',
+            borderColor: actionFeedback.type === 'success' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)',
+            marginBottom: 'var(--spacing-3)',
           }}
         >
           {actionFeedback.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-success)' }} />
+            <CheckCircle2 className="shrink-0" style={{ width: 16, height: 16, marginTop: 2, color: 'var(--color-success)' }} />
           ) : (
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-danger)' }} />
+            <AlertTriangle className="shrink-0" style={{ width: 16, height: 16, marginTop: 2, color: 'var(--color-danger)' }} />
           )}
           <p
             className="type-body-sm"
@@ -280,7 +274,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Escrow management panel */}
       {escrowId && listing.status !== 'Active' && (
-        <div className="mb-5">
+        <div style={{ marginBottom: 'var(--spacing-3)' }}>
           <EscrowPanel listing={listing} escrowId={escrowId} />
         </div>
       )}
@@ -289,13 +283,13 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
       {listing.status === 'Active' && (
         <div className="ll-card p-6">
           {!isConnected ? (
-            <div className="text-center py-4">
-              <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+            <div className="text-center py-4 flex flex-col items-center" style={{ gap: 'var(--spacing-2)' }}>
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
                 Connect your wallet to purchase
               </p>
               <button
                 onClick={connect}
-                className="btn-primary mx-auto"
+                className="btn-primary"
                 id="listing-connect-wallet-btn"
               >
                 Connect Wallet
@@ -308,21 +302,21 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
               </p>
             </div>
           ) : (
-            <div>
+            <div className="flex flex-col" style={{ gap: 'var(--spacing-2)' }}>
               <h3
-                className="type-heading mb-2"
+                className="type-heading"
                 style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
               >
                 Purchase with Escrow
               </h3>
-              <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
                 Open an escrow to lock in this purchase. You&apos;ll be prompted to fund it next.
               </p>
               <button
                 onClick={handleOpenEscrow}
                 disabled={openEscrow.isPending}
                 className="btn-primary w-full justify-center"
-                style={{ padding: '0.875rem 1.5rem', fontSize: '1rem' }}
+                style={{ marginTop: 'var(--spacing-1)' }}
                 id="open-escrow-btn"
               >
                 {openEscrow.isPending ? (
@@ -332,7 +326,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
                   </>
                 ) : (
                   <>
-                    <Shield className="w-5 h-5" />
+                    <Shield style={{ width: 18, height: 18 }} />
                     Buy with Escrow — {formatAmount(listing.price)} {tokenSymbol}
                   </>
                 )}

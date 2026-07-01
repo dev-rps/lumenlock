@@ -17,20 +17,18 @@ import { getNetworkConfig, getContractIds } from '../services/stellar';
 import { useState } from 'react';
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
-function Section({
-  label,
-  icon: Icon,
-  children,
-}: {
+interface SectionProps {
   label: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  icon: React.ComponentType<{ style?: React.CSSProperties }>;
   children: React.ReactNode;
-}) {
+}
+
+function Section({ label, icon: Icon, children }: SectionProps) {
   return (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-4 h-4" style={{ color: 'var(--color-trust)' }} />
-        <h2 className="type-caption" style={{ color: 'var(--color-ink-muted)' }}>
+    <section style={{ marginTop: 'var(--spacing-6)' }}>
+      <div className="flex items-center gap-2" style={{ marginBottom: 'var(--spacing-2)' }}>
+        <Icon style={{ width: 14, height: 14, color: 'var(--color-accent)' }} />
+        <h2 className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
           {label}
         </h2>
       </div>
@@ -40,46 +38,46 @@ function Section({
 }
 
 // ─── Info row ─────────────────────────────────────────────────────────────────
-function InfoRow({
-  label,
-  value,
-  mono,
-  action,
-  last,
-}: {
+interface InfoRowProps {
   label: string;
   value: string;
   mono?: boolean;
   action?: React.ReactNode;
   last?: boolean;
-}) {
+}
+
+function InfoRow({ label, value, mono, action, last }: InfoRowProps) {
   return (
     <div
-      className="flex items-start justify-between gap-4 p-5"
-      style={{ borderBottom: last ? 'none' : '1px solid var(--color-border)' }}
+      className="flex items-start justify-between gap-4"
+      style={{
+        padding: 'var(--spacing-2) var(--spacing-3)',
+        borderBottom: last ? 'none' : '1px solid var(--color-border)',
+      }}
     >
       <div className="flex-1 min-w-0">
-        <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+        <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
           {label}
         </p>
         <p
-          className={`text-sm break-all leading-relaxed ${mono ? '' : ''}`}
+          className={mono ? 'type-mono-sm' : 'type-body-sm'}
           style={{
             color: 'var(--color-ink)',
-            fontFamily: mono ? 'var(--font-mono)' : 'var(--font-ui)',
+            marginTop: 'var(--spacing-1)',
+            wordBreak: 'break-all',
           }}
         >
           {value}
         </p>
       </div>
-      {action && <div className="shrink-0 mt-1">{action}</div>}
+      {action && <div className="shrink-0" style={{ marginTop: 'var(--spacing-1)' }}>{action}</div>}
     </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const { address, walletId, isConnected, connect, disconnect, network } = useWallet();
+  const { address, walletId, isConnected, connect, disconnect } = useWallet();
   const networkConfig = getNetworkConfig();
   const contractIds = getContractIds();
   const [copied, setCopied] = useState<string | null>(null);
@@ -93,15 +91,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container-narrow py-12">
+    <div className="container-narrow" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Header */}
-      <div className="mb-10">
-        <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
-          Configuration
+      <div>
+        <p className="type-caption" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-1)' }}>
+          CONFIGURATION
         </p>
         <h1
-          className="type-display-lg mb-1"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          className="type-display-lg"
+          style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}
         >
           Settings
         </h1>
@@ -114,26 +112,33 @@ export default function SettingsPage() {
       <Section label="Wallet" icon={Wallet}>
         {isConnected && address ? (
           <>
-            {/* Connected indicator */}
+            {/* Connected status row */}
             <div
-              className="flex items-start justify-between gap-4 p-5"
-              style={{ borderBottom: '1px solid var(--color-border)' }}
+              className="flex items-start justify-between gap-4"
+              style={{
+                padding: 'var(--spacing-2) var(--spacing-3)',
+                borderBottom: '1px solid var(--color-border)',
+              }}
             >
               <div className="flex-1 min-w-0">
-                <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+                <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
                   Connected Account
                 </p>
                 <p
-                  className="text-sm break-all leading-relaxed"
-                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+                  className="type-mono-sm"
+                  style={{
+                    color: 'var(--color-ink)',
+                    marginTop: 'var(--spacing-1)',
+                    wordBreak: 'break-all',
+                  }}
                 >
                   {address}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0 mt-1">
+              <div className="flex items-center gap-2 shrink-0" style={{ marginTop: 'var(--spacing-1)' }}>
                 <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: 'var(--color-success)' }}
+                  className="rounded-full"
+                  style={{ width: 8, height: 8, backgroundColor: 'var(--color-success)' }}
                 />
                 <span className="type-caption" style={{ color: 'var(--color-success)' }}>
                   Connected
@@ -141,27 +146,33 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Copy address row */}
+            {/* Wallet software name */}
             <InfoRow
-              label="Wallet"
+              label="Wallet Extension"
               value={walletId || 'Unknown'}
               action={
                 <button
                   onClick={() => copyText('address', address)}
                   className="btn-ghost"
-                  style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                  style={{ padding: '6px 12px', fontSize: '0.8125rem' }}
                   aria-label="Copy wallet address"
                 >
                   {copied === 'address' ? (
-                    <><Check className="w-3.5 h-3.5" style={{ color: 'var(--color-success)' }} /> Copied</>
+                    <>
+                      <Check style={{ width: 14, height: 14, color: 'var(--color-success)' }} />
+                      Copied
+                    </>
                   ) : (
-                    <><Copy className="w-3.5 h-3.5" /> Copy Address</>
+                    <>
+                      <Copy style={{ width: 14, height: 14 }} />
+                      Copy Address
+                    </>
                   )}
                 </button>
               }
             />
 
-            {/* Explorer link */}
+            {/* Explorer view */}
             <InfoRow
               label="View on Explorer"
               value="Open account in Stellar Expert"
@@ -171,26 +182,31 @@ export default function SettingsPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-                  style={{ color: 'var(--color-trust)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                  style={{ color: 'var(--color-accent)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-bright)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
                 >
-                  Open <ExternalLink className="w-3.5 h-3.5" />
+                  Open <ExternalLink style={{ width: 14, height: 14 }} />
                 </a>
               }
-              last
             />
 
-            {/* Disconnect */}
+            {/* Disconnect action */}
             <div
-              className="p-5"
-              style={{ borderTop: '1px solid var(--color-border)' }}
+              style={{
+                padding: 'var(--spacing-2) var(--spacing-3)',
+              }}
             >
               <button
                 onClick={disconnect}
                 className="text-sm font-medium transition-colors"
-                style={{ color: 'var(--color-danger)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#A02020')}
+                style={{
+                  color: 'var(--color-danger)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#ff6b6b')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-danger)')}
                 id="settings-disconnect-btn"
               >
@@ -199,16 +215,22 @@ export default function SettingsPage() {
             </div>
           </>
         ) : (
-          <div className="p-8 text-center">
-            <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+          <div
+            className="flex flex-col items-center justify-center text-center"
+            style={{
+              padding: 'var(--spacing-3)',
+              gap: 'var(--spacing-3)',
+            }}
+          >
+            <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               No wallet connected
             </p>
             <button
               onClick={connect}
-              className="btn-secondary mx-auto"
+              className="btn-secondary"
               id="settings-connect-wallet-btn"
             >
-              <Wallet className="w-4 h-4" />
+              <Wallet style={{ width: 16, height: 16 }} />
               Connect Wallet
             </button>
           </div>
@@ -237,7 +259,7 @@ export default function SettingsPage() {
         ))}
       </Section>
 
-      {/* ── Contracts Section ── */}
+      {/* ── Deployed Contracts Section ── */}
       <Section label="Deployed Contracts" icon={Code2}>
         {[
           { label: 'MarketplaceRegistry', id: contractIds.marketplaceRegistry },
@@ -245,47 +267,54 @@ export default function SettingsPage() {
         ].map(({ label, id }, i, arr) => (
           <div
             key={label}
-            className="flex items-start justify-between gap-4 p-5"
-            style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+            className="flex items-start justify-between gap-4"
+            style={{
+              padding: 'var(--spacing-2) var(--spacing-3)',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none',
+            }}
           >
             <div className="flex-1 min-w-0">
-              <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+              <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
                 {label}
               </p>
               <p
-                className="text-xs break-all leading-relaxed"
-                style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+                className="type-mono-sm"
+                style={{
+                  color: 'var(--color-ink-muted)',
+                  marginTop: 'var(--spacing-1)',
+                  wordBreak: 'break-all',
+                }}
               >
                 {id || 'Not configured'}
               </p>
             </div>
             {id && (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0" style={{ marginTop: 'var(--spacing-1)' }}>
                 <button
                   onClick={() => copyText(label, id)}
-                  className="p-1.5 rounded transition-colors"
-                  style={{ color: 'var(--color-ink-faint)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                  className="p-1 rounded transition-colors"
+                  style={{ color: 'var(--color-ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
                   aria-label={`Copy ${label} contract ID`}
                 >
                   {copied === label ? (
-                    <Check className="w-3.5 h-3.5" style={{ color: 'var(--color-success)' }} />
+                    <Check style={{ width: 14, height: 14, color: 'var(--color-success)' }} />
                   ) : (
-                    <Copy className="w-3.5 h-3.5" />
+                    <Copy style={{ width: 14, height: 14 }} />
                   )}
                 </button>
                 <a
                   href={`${explorerUrl}/contract/${id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 rounded transition-colors"
-                  style={{ color: 'var(--color-ink-faint)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                  className="p-1 rounded transition-colors"
+                  style={{ color: 'var(--color-ink-faint)', display: 'flex', alignItems: 'center' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-ink-faint)')}
                   aria-label={`View ${label} on explorer`}
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink style={{ width: 14, height: 14 }} />
                 </a>
               </div>
             )}
@@ -293,26 +322,32 @@ export default function SettingsPage() {
         ))}
       </Section>
 
-      {/* ── Arbiter Section ── */}
+      {/* ── Arbiter Settings Section ── */}
       <Section label="Arbiter Settings" icon={Shield}>
-        <div className="p-5">
-          <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+        <div style={{ padding: 'var(--spacing-2) var(--spacing-3)' }}>
+          <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
             Designated Arbiter Address
           </p>
           <p
-            className="text-xs break-all leading-relaxed mb-5"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+            className="type-mono-sm"
+            style={{
+              color: 'var(--color-ink)',
+              marginTop: 'var(--spacing-1)',
+              wordBreak: 'break-all',
+              marginBottom: 'var(--spacing-3)',
+            }}
           >
             {process.env.NEXT_PUBLIC_ARBITER_ADDRESS || 'GBAOLJDF6UDRASQEAY2NEW2D3US3VWZFBJFVIKRWI3KNW6JE35OXCGFC'}
           </p>
           <div
-            className="p-3 rounded-lg"
             style={{
+              padding: 'var(--spacing-2)',
+              borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--color-warning-soft)',
-              border: '1px solid rgba(181,121,10,0.2)',
+              border: '1px solid var(--color-accent-border)',
             }}
           >
-            <p className="type-body-sm" style={{ color: 'var(--color-warning)' }}>
+            <p className="type-body-sm" style={{ color: 'var(--color-warning)', fontSize: '0.8rem' }}>
               <strong>Centralization Note:</strong> In this build, a single designated address is
               pre-seeded as the default Arbiter for dispute resolutions. This is a deliberate
               centralization tradeoff documented in SECURITY.md. Future releases will implement a
@@ -324,12 +359,12 @@ export default function SettingsPage() {
 
       {/* ── About Section ── */}
       <Section label="About" icon={Info}>
-        <div className="p-5">
-          <p className="type-body-sm mb-5" style={{ color: 'var(--color-ink-muted)' }}>
+        <div style={{ padding: 'var(--spacing-2) var(--spacing-3)' }}>
+          <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)', marginBottom: 'var(--spacing-3)' }}>
             LumenLock v1.0.0 — Stellar Orange Belt Level Application.
             Built with Next.js 16, Soroban smart contracts, and StellarWalletsKit.
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 flex-wrap">
             {[
               { label: 'GitHub', href: 'https://github.com', external: true },
               { label: 'Architecture', href: '/ARCHITECTURE.md', external: false },
@@ -341,12 +376,12 @@ export default function SettingsPage() {
                 target={external ? '_blank' : undefined}
                 rel={external ? 'noopener noreferrer' : undefined}
                 className="text-sm font-medium flex items-center gap-1 transition-colors"
-                style={{ color: 'var(--color-trust)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+                style={{ color: 'var(--color-accent)', textDecoration: 'none' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-bright)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
               >
                 {label}
-                {external && <ExternalLink className="w-3.5 h-3.5" />}
+                {external && <ExternalLink style={{ width: 14, height: 14 }} />}
               </a>
             ))}
           </div>

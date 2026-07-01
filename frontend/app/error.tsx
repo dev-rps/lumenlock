@@ -11,17 +11,33 @@ export default function Error({
 }) {
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
-        <p className="text-zinc-400 mb-6 text-sm">
+      <div className="text-center flex flex-col items-center" style={{ gap: 'var(--spacing-3)', maxWidth: '40ch' }}>
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            backgroundColor: 'var(--color-danger-soft)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <AlertTriangle style={{ width: 28, height: 28, color: 'var(--color-danger)' }} />
+        </div>
+        <h2 className="type-heading" style={{ color: 'var(--color-ink)' }}>
+          Something went wrong
+        </h2>
+        <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
           {error.message || 'An unexpected error occurred. Please try again.'}
         </p>
         <button
           onClick={reset}
-          className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl brand-gradient text-white font-medium hover:opacity-90 transition-all"
+          className="btn-primary"
+          id="error-reset-btn"
+          style={{ marginTop: 'var(--spacing-1)' }}
         >
-          <RefreshCcw className="w-4 h-4" />
+          <RefreshCcw style={{ width: 15, height: 15 }} />
           Try Again
         </button>
       </div>
