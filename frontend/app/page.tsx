@@ -141,7 +141,7 @@ function FeatureCard({ feature, delay }: { feature: (typeof features)[number]; d
   return (
     <div
       ref={ref}
-      className={`ll-card ll-card-trust-hover flex flex-col gap-4 ${visible ? 'animate-fade-up' : 'opacity-0'}`}
+      className={`ll-card flex flex-col gap-4 ${visible ? 'animate-fade-up' : 'opacity-0'}`}
       style={{
         padding: 'var(--spacing-3)',
         animationDelay: `${delay}ms`,
@@ -191,7 +191,6 @@ export default function LandingPage() {
           paddingBottom: 'var(--spacing-12)',
         }}
       >
-        {/* Subtle grid lines for depth */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -202,10 +201,9 @@ export default function LandingPage() {
         />
 
         <div className="container-wide relative z-10">
-          <div className="grid hero-grid items-center" style={{ gap: 'var(--spacing-8)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center" style={{ gap: 'var(--spacing-8)' }}>
             {/* Left: copy */}
             <div>
-              {/* Eyebrow */}
               <p
                 className={`type-caption transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-2)', transitionDelay: '0ms' }}
@@ -213,7 +211,6 @@ export default function LandingPage() {
                 BUILT ON STELLAR SOROBAN
               </p>
 
-              {/* Headline */}
               <h1
                 className={`type-display-xl transition-all duration-600 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
                 style={{
@@ -229,7 +226,6 @@ export default function LandingPage() {
                 </em>
               </h1>
 
-              {/* Body */}
               <p
                 className={`type-body transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{
@@ -244,7 +240,6 @@ export default function LandingPage() {
                 that every P2P marketplace needs.
               </p>
 
-              {/* CTAs */}
               <div
                 className={`flex flex-col sm:flex-row gap-3 transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{ transitionDelay: '240ms' }}
@@ -268,18 +263,17 @@ export default function LandingPage() {
 
             {/* Right: Seal animation */}
             <div
-              className={`hero-seal-col items-center justify-center transition-all duration-700 ${heroVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+              className={`hidden lg:flex items-center justify-center transition-all duration-700 ${heroVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
               style={{ transitionDelay: '300ms' }}
               aria-hidden="true"
             >
               <div className="flex flex-col items-center" style={{ gap: 'var(--spacing-3)' }}>
                 <div
-                  className="deco-container rounded-full"
+                  className="relative overflow-hidden rounded-full"
                   style={{ width: 280, height: 280 }}
                 >
-                  {/* Radial glow */}
                   <div
-                    className="deco-absolute"
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
                     style={{
                       background: 'radial-gradient(circle, var(--color-accent-soft) 0%, transparent 70%)',
                       borderRadius: '50%',
@@ -350,7 +344,7 @@ export default function LandingPage() {
         id="features"
       >
         <div className="container-wide">
-          <div className="section-header">
+          <div className="text-center" style={{ marginBottom: 'var(--spacing-6)' }}>
             <p className="type-caption mb-3" style={{ color: 'var(--color-accent)' }}>
               WHAT SETS IT APART
             </p>
@@ -376,7 +370,7 @@ export default function LandingPage() {
           </div>
 
           <div
-            className="card-grid feature-grid"
+            className="card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
             style={{ gap: 'var(--spacing-2)' }}
           >
             {features.map((feature, i) => (
@@ -398,7 +392,7 @@ export default function LandingPage() {
         id="how-it-works"
       >
         <div className="container-wide">
-          <div className="section-header">
+          <div className="text-center" style={{ marginBottom: 'var(--spacing-6)' }}>
             <p className="type-caption mb-3" style={{ color: 'var(--color-ink-faint)' }}>
               THE PROCESS
             </p>
@@ -419,11 +413,21 @@ export default function LandingPage() {
             className={`hidden lg:flex gap-0 transition-all duration-700 ${hiw.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
             style={{ position: 'relative' }}
           >
-            <div className="hiw-connector-track" style={{ left: '22px', right: '22px' }} />
+            <div
+              className="absolute top-[22px] left-[22px] right-[22px] h-[1px] z-0"
+              style={{ background: 'var(--color-border)' }}
+            />
 
             {howItWorks.map((step) => (
-              <div key={step.step} className="hiw-step" style={{ padding: '0 var(--spacing-2)' }}>
-                <div className="hiw-marker-wrap" style={{ marginBottom: 'var(--spacing-3)' }}>
+              <div
+                key={step.step}
+                className="flex flex-col items-center flex-1 min-w-0"
+                style={{ padding: '0 var(--spacing-2)' }}
+              >
+                <div
+                  className="relative z-10 flex items-center justify-center shrink-0"
+                  style={{ marginBottom: 'var(--spacing-3)' }}
+                >
                   {step.useSeal ? (
                     <div
                       className="card-slot-marker"
