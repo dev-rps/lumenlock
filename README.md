@@ -24,17 +24,22 @@
 
 ### 🎬 Project Media, CI/CD, & Testing
 
-We have built LumenLock to be fully production-ready, featuring a mobile-responsive interface, integrated unit tests, and continuous integration.
+We have built LumenLock to be fully production-ready, featuring a desktop and mobile-responsive interface, integrated unit tests, and continuous integration.
+
+#### 🖥️ Desktop UI
+Our web application features a premium, responsive dashboard for desktop screens, optimized for managing listings, escrows, and disputes.
+
+<img width="850" alt="LumenLock Desktop Interface" src="https://github.com/user-attachments/assets/917c4642-29ea-4796-8b4e-4e437fbac178" />
 
 #### 📱 Mobile Responsive UI
 Our web application is optimized for mobile devices, supporting native Freighter wallet connections and responsive views for P2P interactions.
 
-<img width="759" height="1600" alt="WhatsApp Image 2026-06-30 at 01 50 11" src="https://github.com/user-attachments/assets/b7a52aed-c1f7-4e41-a44b-74facae7a2d0" />
+<img width="360" alt="LumenLock Mobile Interface" src="https://github.com/user-attachments/assets/394d7803-fc37-4949-b9dd-897b4980a281" />
 
 #### 📽️ Demo Video
 Here is a 1-2 minute video walk-through demonstrating mobile navigation and wallet interactions.
 
-https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1
+https://github.com/user-attachments/assets/9da25713-2af6-4490-aa37-b871a35ed7f7
 
 #### ⚙️ CI/CD Pipeline
 Continuous Integration via GitHub Actions automatically builds the Rust contracts, runs cargo tests, validates TypeScript types, runs Vitest tests, and deploys.

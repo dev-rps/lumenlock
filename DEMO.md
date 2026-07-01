@@ -11,9 +11,9 @@
 ### Walkthrough Video
 Below is the video demonstration showcasing the mobile-responsive user interface, Freighter wallet connection, and active escrow flows.
 
-https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1
+https://github.com/user-attachments/assets/9da25713-2af6-4490-aa37-b871a35ed7f7
 
-*(If the video does not render, you can access it directly via [GitHub Video Link](https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1))*
+*(If the video does not render, you can access it directly via [GitHub Video Link](https://github.com/user-attachments/assets/9da25713-2af6-4490-aa37-b871a35ed7f7))*
 
 ### Video Storyboard Breakdown (3 Minutes)
 
@@ -27,12 +27,22 @@ https://github.com/user-attachments/assets/24d261c7-6686-44e6-8ac8-bef0df9ebed1
 
 ---
 
+## 🖥️ Desktop Interface
+
+LumenLock features a premium, responsive dashboard for desktop screens, optimized for managing listings, escrows, and disputes.
+
+<p align="center">
+  <img width="850" alt="LumenLock Desktop Interface" src="https://github.com/user-attachments/assets/917c4642-29ea-4796-8b4e-4e437fbac178" />
+</p>
+
+---
+
 ## 📱 Mobile Responsive Interface
 
 LumenLock features a fully responsive, mobile-first design optimized for seamless interactions with Freighter and other Stellar-supported wallets.
 
 <p align="center">
-  <img width="380" alt="LumenLock Mobile Responsive Interface" src="https://github.com/user-attachments/assets/b7a52aed-c1f7-4e41-a44b-74facae7a2d0" />
+  <img width="360" alt="LumenLock Mobile Responsive Interface" src="https://github.com/user-attachments/assets/394d7803-fc37-4949-b9dd-897b4980a281" />
 </p>
 
 ---
