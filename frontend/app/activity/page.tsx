@@ -201,18 +201,29 @@ export default function ActivityPage() {
         </button>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+      {/* Filter chips — flex-wrap + explicit padding so chips never overflow */}
+      <div
+        className="flex flex-wrap items-center"
+        style={{ gap: 'var(--stack-xs)', marginBottom: 'var(--stack-lg)' }}
+      >
         {filterOptions.map(({ value, label }) => (
           <button
             key={value}
             onClick={() => setFilter(value)}
-            className="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '8px 16px',      /* explicit — label always centered, height auto */
+              whiteSpace: 'nowrap',
+              borderRadius: '9999px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              fontFamily: 'var(--font-ui)',
+              border: `1px solid ${filter === value ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
               backgroundColor: filter === value ? 'var(--color-trust-soft)' : 'var(--color-surface)',
               color: filter === value ? 'var(--color-trust)' : 'var(--color-ink-muted)',
-              border: `1px solid ${filter === value ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
-              fontFamily: 'var(--font-ui)',
+              transition: 'all 150ms',
+              cursor: 'pointer',
             }}
           >
             {label}

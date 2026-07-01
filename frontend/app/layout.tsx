@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               style={{ borderTop: '1px solid var(--color-border)' }}
             >
               <div className="container-wide">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between" style={{ gap: 'var(--spacing-2)' }}>
                   {/* Logo */}
                   <div className="flex items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">

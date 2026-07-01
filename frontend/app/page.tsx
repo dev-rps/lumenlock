@@ -1,6 +1,5 @@
 'use client';
 
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { useRef, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
@@ -18,7 +17,7 @@ const features = [
   {
     icon: () => (
       // Two overlapping circles — bilateral confirmation
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
         <circle cx="9" cy="12" r="6" />
         <circle cx="15" cy="12" r="6" />
       </svg>
@@ -30,7 +29,7 @@ const features = [
   {
     icon: () => (
       // Milestone flag / checkpoint
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <line x1="5" y1="4" x2="5" y2="20" />
         <polyline points="5,4 19,4 15,10 19,16 5,16" />
       </svg>
@@ -42,7 +41,7 @@ const features = [
   {
     icon: () => (
       // Clock — deadline protection
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
         <circle cx="12" cy="12" r="8" />
         <line x1="12" y1="8" x2="12" y2="12" />
         <line x1="12" y1="12" x2="15" y2="14" />
@@ -55,7 +54,7 @@ const features = [
   {
     icon: () => (
       // Scale / balance — dispute arbitration
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="4" x2="12" y2="20" />
         <line x1="4" y1="8" x2="20" y2="8" />
         <path d="M4,8 Q2,12 4,16 Q6,12 4,8" />
@@ -70,7 +69,7 @@ const features = [
   {
     icon: () => (
       // Coin stack — multi-asset
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
         <ellipse cx="12" cy="7" rx="7" ry="2.5" />
         <path d="M5,7 Q5,11 12,11 Q19,11 19,7" />
         <path d="M5,11 Q5,15 12,15 Q19,15 19,11" />
@@ -84,7 +83,7 @@ const features = [
   {
     icon: () => (
       // Stacked layers — composability
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="12,3 21,8.5 12,14 3,8.5 12,3" />
         <line x1="3" y1="13.5" x2="12" y2="19" />
         <line x1="21" y1="13.5" x2="12" y2="19" />
@@ -143,28 +142,47 @@ function useScrollReveal(threshold = 0.12) {
 }
 
 // ─── Feature Card ─────────────────────────────────────────────────────────────
+// Uses the slot system: card-slot-marker (fixed 44px icon) + card-slot-title
+// (min-height for titles) to guarantee all 6 cards share one baseline.
 function FeatureCard({ feature, delay }: { feature: (typeof features)[number]; delay: number }) {
   const { ref, visible } = useScrollReveal();
   const Icon = feature.icon;
   return (
     <div
       ref={ref}
-      className={`ll-card ll-card-trust-hover p-6 flex flex-col gap-4 ${visible ? 'animate-fade-up' : 'opacity-0'}`}
-      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+      className={`ll-card ll-card-trust-hover flex flex-col gap-4 ${visible ? 'animate-fade-up' : 'opacity-0'}`}
+      style={{
+        padding: 'var(--spacing-3)', /* 24px — consistent on every card */
+        animationDelay: `${delay}ms`,
+        animationFillMode: 'both',
+      }}
     >
+      {/*
+       * card-slot-marker: fixed 44×44px with overflow:hidden.
+       * The icon (22px) fits inside. Even if Icon were 100px, it would be
+       * clipped to the slot — sibling cards are NEVER pushed out of alignment.
+       */}
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center"
+        className="card-slot-marker"
         style={{ backgroundColor: 'var(--color-trust-soft)', color: 'var(--color-trust)' }}
       >
         <Icon />
       </div>
-      <div>
-        <h3
-          className="type-heading mb-2"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-        >
-          {feature.title}
-        </h3>
+
+      <div className="flex flex-col gap-2">
+        {/*
+         * card-slot-title: min-height:3.5rem means even if one title wraps to
+         * 2 lines and another is 1 line, the description starts at the same
+         * y-offset across all cards in the row.
+         */}
+        <div className="card-slot-title">
+          <h3
+            className="type-heading"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            {feature.title}
+          </h3>
+        </div>
         <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
           {feature.description}
         </p>
@@ -187,12 +205,17 @@ export default function LandingPage() {
   return (
     <div className="overflow-hidden">
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section
-        className="relative min-h-[88vh] flex items-center"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="relative"
+        style={{
+          backgroundColor: 'var(--color-surface)',
+          minHeight: '88vh',
+          display: 'flex',
+          alignItems: 'center',
+        }}
       >
-        {/* Subtle ruled-paper lines for "ledger" feel */}
+        {/* Subtle ruled-paper lines for "ledger" feel — always safe, pointer-events-none */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -203,8 +226,11 @@ export default function LandingPage() {
           aria-hidden="true"
         />
 
-        <div className="container-wide relative z-10 py-24">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="container-wide relative z-10" style={{ paddingTop: 'var(--spacing-12)', paddingBottom: 'var(--spacing-12)' }}>
+          <div
+            className="grid hero-grid items-center"
+            style={{ gap: 'var(--spacing-8)' }}
+          >
             {/* Left: copy */}
             <div>
               {/* Eyebrow */}
@@ -226,20 +252,19 @@ export default function LandingPage() {
                 }}
               >
                 Trustless Escrow{' '}
-                <em
-                  style={{ color: 'var(--color-accent)', fontStyle: 'italic' }}
-                >
+                <em style={{ color: 'var(--color-accent)', fontStyle: 'italic' }}>
                   for Stellar
                 </em>
               </h1>
 
               {/* Body */}
               <p
-                className={`type-body mb-10 transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                className={`type-body transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                 style={{
                   color: 'var(--color-ink-muted)',
                   maxWidth: '55ch',
                   transitionDelay: '160ms',
+                  marginTop: 'var(--stack-md)', /* 24px: heading → body */
                 }}
               >
                 LumenLock brings bilateral confirmation, milestone-based releases, and
@@ -250,7 +275,7 @@ export default function LandingPage() {
               {/* CTAs */}
               <div
                 className={`flex flex-col sm:flex-row gap-3 transition-all duration-500 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                style={{ transitionDelay: '240ms' }}
+                style={{ transitionDelay: '240ms', marginTop: 'var(--stack-lg)' /* 32px: body → buttons */ }}
               >
                 <Link
                   href="/marketplace"
@@ -258,7 +283,7 @@ export default function LandingPage() {
                   id="explore-marketplace-btn"
                 >
                   Explore Marketplace
-                  <ArrowRight className="w-4.5 h-4.5" />
+                  <ArrowRight style={{ width: 17, height: 17 }} />
                 </Link>
                 <Link
                   href="/dashboard"
@@ -270,50 +295,89 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: Seal animation */}
+            {/* Right: Seal animation — hero-seal-col hides on mobile/tablet */}
             <div
-              className={`flex items-center justify-center transition-all duration-700 ${heroVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+              className={`hero-seal-col items-center justify-center transition-all duration-700 ${heroVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
               style={{ transitionDelay: '300ms' }}
               aria-hidden="true"
             >
-              <div className="relative flex items-center justify-center">
-                {/* Background ring */}
+              {/*
+               * deco-container: fixed 300×300px box.
+               * The radial gradient glow is deco-absolute (no layout impact).
+               * The SealIcon sits on top via relative z-index.
+               * The caption is outside the deco-container so it flows normally.
+               */}
+              <div className="flex flex-col items-center gap-6">
                 <div
-                  className="absolute rounded-full"
-                  style={{
-                    width: 300,
-                    height: 300,
-                    background: 'radial-gradient(circle, var(--color-trust-soft) 0%, transparent 70%)',
-                  }}
-                />
-                {heroVisible && (
-                  <SealIcon variant="animated" size={200} className="relative z-10" />
-                )}
-                {/* Decorative caption */}
-                <div
-                  className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap type-caption"
-                  style={{ color: 'var(--color-ink-faint)' }}
+                  className="deco-container rounded-full"
+                  style={{ width: 280, height: 280 }}
                 >
-                  Both parties confirm · Funds release
+                  {/* Background glow — absolutely positioned, never affects layout */}
+                  <div
+                    className="deco-absolute"
+                    style={{
+                      background: 'radial-gradient(circle, var(--color-trust-soft) 0%, transparent 70%)',
+                      borderRadius: '50%',
+                    }}
+                    aria-hidden="true"
+                  />
+                  {/* Seal — centered, z-index:1, inside the fixed container */}
+                  {heroVisible && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ zIndex: 1 }}
+                    >
+                      <SealIcon variant="animated" size={180} />
+                    </div>
+                  )}
                 </div>
+
+                {/* Caption: outside the deco-container, flows normally */}
+                <p className="type-caption" style={{ color: 'var(--color-ink-faint)', whiteSpace: 'nowrap' }}>
+                  Both parties confirm · Funds release
+                </p>
               </div>
             </div>
           </div>
+
+          {/* Responsive: stack on mobile — handled by .hero-grid CSS class */}
         </div>
       </section>
 
       {/* ── Stats Strip ─────────────────────────────────────────────────────── */}
       <section
-        className="py-10"
-        style={{ borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}
+        style={{
+          borderTop: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-surface)',
+        }}
       >
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row items-center divide-y sm:divide-y-0 sm:divide-x divide-[var(--color-border)] w-full">
-            {stats.map(({ label, value }) => (
-              <div key={label} className="flex-1 flex flex-col items-center py-5 sm:py-0 px-8 text-center">
+          {/*
+           * Stats strip: flex row with stretch so all cells share the same height.
+           * On mobile, stacks vertically with horizontal separators instead.
+           */}
+          <div
+            className="flex flex-col sm:flex-row items-stretch"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            {stats.map(({ label, value }, i) => (
+              <div
+                key={label}
+                className="stats-strip-cell"
+                style={{
+                  borderRight: i < stats.length - 1 ? '1px solid var(--color-border)' : undefined,
+                  borderBottom: undefined,
+                }}
+              >
                 <span
-                  className="type-mono font-semibold text-3xl mb-1"
-                  style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-mono)' }}
+                  className="font-semibold mb-1"
+                  style={{
+                    color: 'var(--color-trust)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '1.875rem', /* 30px — on grid */
+                    lineHeight: 1.2,
+                  }}
                 >
                   {value}
                 </span>
@@ -326,22 +390,30 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Feature Grid ────────────────────────────────────────────────────── */}
-      <section className="py-24" id="features">
+      {/* ── Feature Grid ──────────────────────────────────────────────────────── */}
+      <section style={{ paddingTop: 'var(--spacing-12)', paddingBottom: 'var(--spacing-12)' }} id="features">
         <div className="container-wide">
-          <div className="text-center mb-16">
+
+          {/* Section header — all children centered to match the heading */}
+          <div className="section-header">
             <p className="type-caption mb-3" style={{ color: 'var(--color-accent)' }}>
               What sets it apart
             </p>
             <h2
-              className="type-display-lg mb-4"
-              style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+              className="type-display-lg"
+              style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', marginBottom: 'var(--stack-sm)' }}
             >
               The Escrow Primitive Stellar Was Missing
             </h2>
+            {/* Description: text-align:center + mx-auto matches the centered heading above */}
             <p
-              className="type-body mx-auto"
-              style={{ color: 'var(--color-ink-muted)', maxWidth: '58ch' }}
+              className="type-body"
+              style={{
+                color: 'var(--color-ink-muted)',
+                maxWidth: '58ch',
+                margin: '0 auto',         /* center as block */
+                textAlign: 'center',      /* match heading alignment */
+              }}
             >
               Stellar&apos;s native claimable balances support conditional release — but not bilateral
               confirmation, dispute freezing, or milestone-based partial releases.
@@ -349,7 +421,15 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/*
+           * card-grid + feature-grid: CSS classes in globals.css handle
+           * 1-col (mobile) → 2-col (tablet) → 3-col (desktop) responsively.
+           * align-items:stretch (from .card-grid) forces equal-height siblings.
+           */}
+          <div
+            className="card-grid feature-grid"
+            style={{ gap: 'var(--spacing-3)' }}
+          >
             {features.map((feature, i) => (
               <FeatureCard key={feature.title} feature={feature} delay={i * 60} />
             ))}
@@ -357,14 +437,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── How It Works ────────────────────────────────────────────────────── */}
+      {/* ── How It Works ──────────────────────────────────────────────────────── */}
       <section
-        className="py-24"
+        style={{
+          paddingTop: 'var(--spacing-12)',
+          paddingBottom: 'var(--spacing-12)',
+          backgroundColor: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)',
+        }}
         id="how-it-works"
-        style={{ backgroundColor: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}
       >
         <div className="container-wide">
-          <div className="text-center mb-16">
+
+          {/* Section header */}
+          <div className="section-header">
             <p className="type-caption mb-3" style={{ color: 'var(--color-accent)' }}>
               The process
             </p>
@@ -382,90 +469,133 @@ export default function LandingPage() {
           {/* Desktop timeline */}
           <div
             ref={hiw.ref}
-            className={`hidden lg:flex items-start gap-0 transition-all duration-700 ${hiw.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            className={`hidden lg:flex gap-0 transition-all duration-700 ${hiw.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            style={{ position: 'relative' }}
           >
-            {howItWorks.map((step, i) => (
-              <div key={step.step} className="flex items-start">
-                {/* Step */}
-                <div className="flex flex-col items-center px-4" style={{ minWidth: 220 }}>
-                  {/* Marker + connector row */}
-                  <div className="flex items-center w-full mb-6">
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                      {step.useSeal ? (
-                        <SealIcon variant="animated" size={40} />
-                      ) : (
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm"
-                          style={{
-                            backgroundColor: 'var(--color-trust-soft)',
-                            color: 'var(--color-trust)',
-                            border: '1.5px solid rgba(43,58,143,0.25)',
-                            fontFamily: 'var(--font-mono)',
-                          }}
-                        >
-                          {step.step}
-                        </div>
-                      )}
+            {/*
+             * Single connector track spanning all markers.
+             * Position:absolute at top:22px (half the 44px marker slot).
+             * This replaces the per-gap connector hack that was vulnerable to
+             * the SealIcon pushing the line offset in step 03.
+             */}
+            <div className="hiw-connector-track" style={{ left: '22px', right: '22px' }} />
+
+            {howItWorks.map((step) => (
+              <div key={step.step} className="hiw-step" style={{ padding: '0 var(--spacing-2)' }}>
+
+                {/* Marker slot — fixed 44×44, overflow:hidden */}
+                <div className="hiw-marker-wrap" style={{ marginBottom: 'var(--spacing-3)' }}>
+                  {step.useSeal ? (
+                    /*
+                     * SealIcon inside card-slot-marker.
+                     * overflow:hidden clips it to 44px regardless of animation.
+                     * It will NOT push the title below its siblings' titles.
+                     */
+                    <div
+                      className="card-slot-marker"
+                      style={{
+                        backgroundColor: 'var(--color-trust-soft)',
+                        border: '1.5px solid rgba(43,58,143,0.25)',
+                      }}
+                    >
+                      <SealIcon variant="animated" size={32} />
                     </div>
-                    {i < howItWorks.length - 1 && (
-                      <div
-                        className="h-px flex-1 ml-4"
-                        style={{ backgroundColor: 'var(--color-border)' }}
-                      />
-                    )}
-                  </div>
+                  ) : (
+                    <div
+                      className="card-slot-marker card-slot-marker--circle"
+                      style={{
+                        backgroundColor: 'var(--color-trust-soft)',
+                        color: 'var(--color-trust)',
+                        border: '1.5px solid rgba(43,58,143,0.25)',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {step.step}
+                    </div>
+                  )}
+                </div>
+
+                {/* Title — card-slot-title ensures same baseline across all 4 steps */}
+                <div className="card-slot-title" style={{ width: '100%', justifyContent: 'center' }}>
                   <h3
-                    className="type-heading text-center mb-2"
-                    style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+                    className="type-heading text-center"
+                    style={{
+                      color: 'var(--color-ink)',
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '1.1rem',
+                    }}
                   >
                     {step.title}
                   </h3>
-                  <p
-                    className="type-body-sm text-center"
-                    style={{ color: 'var(--color-ink-muted)' }}
-                  >
-                    {step.description}
-                  </p>
                 </div>
+
+                {/* Description */}
+                <p
+                  className="type-body-sm text-center"
+                  style={{ color: 'var(--color-ink-muted)' }}
+                >
+                  {step.description}
+                </p>
               </div>
             ))}
           </div>
 
           {/* Mobile vertical timeline */}
-          <div className="lg:hidden flex flex-col gap-0">
+          <div className="lg:hidden flex flex-col" style={{ gap: 0 }}>
             {howItWorks.map((step, i) => (
               <div key={step.step} className="flex gap-6">
-                {/* Left: number/seal + vertical line */}
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                    {step.useSeal ? (
-                      <SealIcon variant="animated" size={40} />
-                    ) : (
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm"
-                        style={{
-                          backgroundColor: 'var(--color-trust-soft)',
-                          color: 'var(--color-trust)',
-                          border: '1.5px solid rgba(43,58,143,0.25)',
-                          fontFamily: 'var(--font-mono)',
-                        }}
-                      >
-                        {step.step}
-                      </div>
-                    )}
-                  </div>
+                {/* Left: marker + vertical line */}
+                <div className="flex flex-col items-center" style={{ flexShrink: 0 }}>
+                  {step.useSeal ? (
+                    <div
+                      className="card-slot-marker"
+                      style={{
+                        backgroundColor: 'var(--color-trust-soft)',
+                        border: '1.5px solid rgba(43,58,143,0.25)',
+                      }}
+                    >
+                      <SealIcon variant="animated" size={32} />
+                    </div>
+                  ) : (
+                    <div
+                      className="card-slot-marker card-slot-marker--circle"
+                      style={{
+                        backgroundColor: 'var(--color-trust-soft)',
+                        color: 'var(--color-trust)',
+                        border: '1.5px solid rgba(43,58,143,0.25)',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {step.step}
+                    </div>
+                  )}
                   {i < howItWorks.length - 1 && (
                     <div
-                      className="w-px flex-1 my-2"
-                      style={{ backgroundColor: 'var(--color-border)', minHeight: 40 }}
+                      style={{
+                        width: '1px',
+                        flex: 1,
+                        minHeight: '40px',
+                        marginTop: '8px',
+                        marginBottom: '8px',
+                        backgroundColor: 'var(--color-border)',
+                      }}
                     />
                   )}
                 </div>
+
                 {/* Right: content */}
-                <div className="pb-10 flex-1">
+                <div style={{ paddingBottom: 'var(--spacing-4)', paddingTop: '8px', flex: 1, minWidth: 0 }}>
                   <h3
                     className="type-heading mb-2"
-                    style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+                    style={{
+                      color: 'var(--color-ink)',
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '1.1rem',
+                    }}
                   >
                     {step.title}
                   </h3>
@@ -476,33 +606,66 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* ── CTA Section ─────────────────────────────────────────────────────── */}
+      {/* ── CTA Band ──────────────────────────────────────────────────────────── */}
       <section
-        className="py-24"
-        style={{ backgroundColor: 'var(--color-trust)' }}
+        style={{
+          paddingTop: 'var(--spacing-12)',
+          paddingBottom: 'var(--spacing-12)',
+          backgroundColor: 'var(--color-trust)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
       >
-        <div className="container-wide">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            {/* Text */}
+        {/*
+         * Decorative SealIcon motif — §3.3 compliant:
+         * Inside deco-container (position:relative, overflow:hidden).
+         * Uses deco-absolute — pointer-events:none, z-index:0.
+         * Cannot clip text or affect layout.
+         */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ zIndex: 0 }}
+          aria-hidden="true"
+        >
+          <div
+            style={{
+              position: 'absolute',
+              right: '-48px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              opacity: 0.08,
+            }}
+          >
+            <SealIcon variant="static" size={240} />
+          </div>
+        </div>
+
+        <div className="container-wide" style={{ position: 'relative', zIndex: 1 }}>
+          <div
+            className="flex flex-col lg:flex-row items-center"
+            style={{ gap: 'var(--spacing-8)' }}
+          >
+            {/* Text block */}
             <div className="flex-1 text-center lg:text-left">
               <p
-                className="type-caption mb-4"
-                style={{ color: 'rgba(255,255,255,0.5)' }}
+                className="type-caption"
+                style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 'var(--stack-xs)' }}
               >
                 Get started today
               </p>
               <h2
-                className="type-display-lg mb-4"
-                style={{ color: '#FFFFFF', fontFamily: 'var(--font-display)' }}
+                className="type-display-lg"
+                style={{ color: '#FFFFFF', fontFamily: 'var(--font-display)', marginBottom: 'var(--stack-md)' }}
               >
                 Ready to transact trustlessly?
               </h2>
               <p
-                className="type-body mb-8"
-                style={{ color: 'rgba(255,255,255,0.7)', maxWidth: '48ch' }}
+                className="type-body"
+                style={{ color: 'rgba(255,255,255,0.7)', maxWidth: '48ch', marginBottom: 'var(--stack-lg)' }}
               >
                 Connect your Stellar wallet and start buying or selling on the decentralized marketplace.
                 Every trade is protected by an on-chain escrow vault.
@@ -514,7 +677,7 @@ export default function LandingPage() {
                 style={{ backgroundColor: 'var(--color-accent)', color: '#FFFFFF' }}
               >
                 Get Started
-                <ArrowRight className="w-4.5 h-4.5" />
+                <ArrowRight style={{ width: 17, height: 17 }} />
               </Link>
             </div>
           </div>

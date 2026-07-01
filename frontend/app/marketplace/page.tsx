@@ -31,8 +31,8 @@ function ListingCard({ listing }: { listing: ListingData }) {
 
   return (
     <div
-      className="ll-card ll-card-hover p-6 flex flex-col gap-4 group"
-      style={{ cursor: 'default' }}
+      className="ll-card ll-card-hover flex flex-col gap-4 group"
+      style={{ cursor: 'default', padding: 'var(--spacing-3)' }}
     >
       {/* Header row: title + badges */}
       <div className="flex items-start justify-between gap-4">
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
           >
             Marketplace
           </h1>
-          <div className="mt-1">
+          <div style={{ marginTop: 'var(--stack-xs)' }}>
             {isLoading ? (
               <Skeleton height={16} width={180} />
             ) : (
@@ -215,17 +215,25 @@ export default function MarketplacePage() {
         </div>
 
         {/* Status filter chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+        <div className="flex items-center gap-2 flex-wrap">
           {(['all', 'Active', 'Locked', 'Completed'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className="px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-150"
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '8px 16px',       /* explicit — never let height vary */
+                whiteSpace: 'nowrap',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                fontFamily: 'var(--font-ui)',
+                border: `1px solid ${statusFilter === s ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
                 backgroundColor: statusFilter === s ? 'var(--color-trust-soft)' : 'var(--color-surface)',
                 color: statusFilter === s ? 'var(--color-trust)' : 'var(--color-ink-muted)',
-                border: `1px solid ${statusFilter === s ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
-                fontFamily: 'var(--font-ui)',
+                transition: 'all 150ms',
+                cursor: 'pointer',
               }}
             >
               {s === 'all' ? 'All' : s}
@@ -236,7 +244,7 @@ export default function MarketplacePage() {
 
       {/* Content states */}
       {isLoading ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-3)' }}>
           {[...Array(6)].map((_, i) => <ListingCardSkeleton key={i} />)}
         </div>
       ) : error ? (
@@ -246,7 +254,7 @@ export default function MarketplacePage() {
           onRetry={() => refetch()}
         />
       ) : filtered && filtered.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-3)' }}>
           {filtered.map((listing) => (
             <ListingCard key={listing.listing_id.toString()} listing={listing} />
           ))}

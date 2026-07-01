@@ -350,7 +350,10 @@ function DashboardContent() {
             }
           />
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            className="card-grid my-listings-grid"
+            style={{ gap: 'var(--spacing-2)' }}
+          >
             {myListings.map((listing) => (
               <MyListingCard key={listing.listing_id.toString()} listing={listing} />
             ))}
@@ -366,7 +369,7 @@ function DashboardContent() {
         >
           Quick Actions
         </h2>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="card-grid quick-actions-grid" style={{ gap: 'var(--spacing-2)' }}>
           {[
             {
               href: '/activity',
@@ -390,20 +393,27 @@ function DashboardContent() {
             <Link
               key={href}
               href={href}
-              className="ll-card ll-card-trust-hover p-6 group block"
+              className="ll-card ll-card-trust-hover flex flex-col group"
+              style={{ padding: 'var(--spacing-3)', textDecoration: 'none' }}
             >
+              {/*
+               * card-slot-marker: fixed 44px icon slot.
+               * card-slot-title: min-height so all 3 labels start at same y.
+               */}
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors"
+                className="card-slot-marker mb-3"
                 style={{ backgroundColor: 'var(--color-trust-soft)', color: 'var(--color-trust)' }}
               >
-                <Icon className="w-5 h-5" />
+                <Icon style={{ width: 18, height: 18 }} />
               </div>
-              <h3
-                className="font-semibold mb-1 transition-colors"
-                style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
-              >
-                {label}
-              </h3>
+              <div className="card-slot-title">
+                <h3
+                  className="font-semibold"
+                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
+                >
+                  {label}
+                </h3>
+              </div>
               <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
                 {description}
               </p>

@@ -56,6 +56,13 @@
   /* Border radius */
   --radius-card: 0.75rem;  /* 12px */
   --radius-pill: 9999px;
+
+  /* Vertical rhythm stack scale (maps to 8px grid) */
+  --stack-xs: 0.5rem;   /*  8px — tightly related: label + value */
+  --stack-sm: 1rem;     /* 16px — related: heading + subheading */
+  --stack-md: 1.5rem;   /* 24px — heading + body text */
+  --stack-lg: 2rem;     /* 32px — body text + CTA / actions */
+  --stack-xl: 4rem;     /* 64px — between distinct page sections */
 }
 
 /* ─── Base Styles ────────────────────────────────────────────────────────────── */
@@ -147,33 +154,33 @@ body {
 .container-wide {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0 var(--spacing-6); /* 48px */
 }
 
 .container-narrow {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 4rem;
+  padding: 0 var(--spacing-6); /* 48px */
 }
 
 @media (max-width: 1024px) {
   .container-wide,
   .container-narrow {
-    padding: 0 2rem;
+    padding: 0 var(--spacing-4); /* 32px */
   }
 }
 
 @media (max-width: 768px) {
   .container-wide,
   .container-narrow {
-    padding: 0 1.5rem;
+    padding: 0 var(--spacing-3); /* 24px */
   }
 }
 
 @media (max-width: 480px) {
   .container-wide,
   .container-narrow {
-    padding: 0 1rem;
+    padding: 0 var(--spacing-2); /* 16px */
   }
 }
 
@@ -516,3 +523,281 @@ body {
   color: var(--color-trust);
 }
 
+/* ─── Layout Primitives: Shared Slot System ──────────────────────────────────── */
+
+/*
+ * card-slot-marker
+ * Fixed 44×44 container for icons, step numbers, or graphics.
+ * overflow:hidden ensures NO graphic (SealIcon, SVG, custom art) can ever
+ * push outside the slot and misalign its sibling row.
+ * Add color/background-color inline per instance.
+ */
+.card-slot-marker {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+/*
+ * card-slot-marker--circle
+ * Same as above but circular (for step numbers).
+ */
+.card-slot-marker--circle {
+  border-radius: 9999px;
+}
+
+/*
+ * card-slot-title
+ * min-height for card titles that may wrap to 2 lines.
+ * Guarantees description text starts at the same y-offset across
+ * ALL siblings in a CardGrid row.
+ * 1.375rem * 1.3 * 2 lines = ~3.575rem ≈ use 3.5rem = 56px
+ */
+.card-slot-title {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ─── Card Grid (enforces equal-height siblings) ─────────────────────────────── */
+.card-grid {
+  display: grid;
+  align-items: stretch;
+}
+
+/* ─── Navbar slot rules ──────────────────────────────────────────────────────── */
+
+/*
+ * wallet-btn
+ * Fixed min-width prevents the navbar from shifting layout
+ * when the wallet button transitions between "Connect Wallet" (long)
+ * and a truncated address (shorter). Always wide enough for the
+ * longest possible label.
+ */
+.wallet-btn {
+  min-width: 160px;
+  white-space: nowrap;
+}
+
+/* ─── How It Works step slots ────────────────────────────────────────────────── */
+
+/* Step container: equal flex-1 columns */
+.hiw-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Relative wrapper for the marker + connector row */
+.hiw-markers-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+/* The full-width connector line sits behind ALL markers at a fixed top offset */
+.hiw-connector-track {
+  position: absolute;
+  top: 22px; /* half of 44px marker slot */
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-border) 10%,
+    var(--color-trust-soft) 50%,
+    var(--color-border) 90%,
+    transparent 100%
+  );
+  z-index: 0;
+}
+
+/* Each marker wrapper: sits on top of the connector track */
+.hiw-marker-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── Decorative element containment ─────────────────────────────────────────── */
+
+/*
+ * deco-container
+ * Any decorative shape, glow, or graphic MUST be a child of this.
+ * The container has a defined size and isolation — decorative children
+ * use position:absolute inside it and cannot affect surrounding layout.
+ */
+.deco-container {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/*
+ * deco-absolute
+ * Helper for the decorative child itself.
+ */
+.deco-absolute {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Stats strip ────────────────────────────────────────────────────────────── */
+
+.stats-strip-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3) var(--spacing-4); /* 24px 32px */
+  text-align: center;
+  min-width: 0;
+}
+
+/* ─── Section header pattern ─────────────────────────────────────────────────── */
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--spacing-6); /* 48px */
+}
+
+/* ─── Responsive nav gap ─────────────────────────────────────────────────────── */
+
+.nav-desktop-links {
+  display: none;
+  align-items: center;
+  gap: 32px; /* --spacing-4 */
+}
+
+@media (min-width: 768px) {
+  .nav-desktop-links {
+    display: flex;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nav-desktop-links {
+    gap: 40px; /* --spacing-4 + 8px step up at wide screens */
+  }
+}
+
+/* ─── Responsive grid helpers ───────────────────────────────────────────────── */
+
+/* Hero 2-col layout */
+.hero-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Feature grid: 1 → 2 → 3 cols */
+.feature-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Marketplace listings: 1 → 2 → 3 cols */
+.marketplace-listing-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .marketplace-listing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .marketplace-listing-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Analytics stats: 2 → 3 cols */
+.analytics-stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 768px) {
+  .analytics-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Dashboard quick-actions: 1 → 3 cols */
+.quick-actions-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Dashboard my-listings: 1 → 2 → 3 cols */
+.my-listings-grid {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .my-listings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .my-listings-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Marketplace filter chips */
+.marketplace-filter-chips {
+  flex-wrap: wrap;
+}
+
+/* Stats strip: vertical on mobile, horizontal on sm+ */
+@media (max-width: 639px) {
+  .stats-strip-cell {
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .stats-strip-cell:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Hero seal column: hide on mobile/tablet */
+.hero-seal-col {
+  display: flex;
+}
+@media (max-width: 1023px) {
+  .hero-seal-col {
+    display: none;
+  }
+}

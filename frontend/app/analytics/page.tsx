@@ -82,7 +82,6 @@ function DonutChart({
   );
 }
 
-// ─── Stat Number Card ─────────────────────────────────────────────────────────
 function StatCard({
   title,
   value,
@@ -99,24 +98,44 @@ function StatCard({
   iconColor: string;
 }) {
   return (
-    <div className="ll-card p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: iconBg }}
-        >
-          <Icon className="w-[18px] h-[18px] shrink-0" style={{ color: iconColor }} />
-        </div>
-        <span
-          className="font-semibold text-2xl"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
-        >
-          {value}
-        </span>
+    /*
+     * Internal layout: left-aligned vertical flex.
+     * icon → value → title → description
+     * All 4 elements share the same left edge.
+     * Stack gaps use the --stack-xs (8px) rhythm scale.
+     */
+    <div
+      className="ll-card flex flex-col"
+      style={{ padding: 'var(--spacing-3)', alignItems: 'flex-start' }}
+    >
+      {/* Icon slot */}
+      <div
+        className="card-slot-marker"
+        style={{ backgroundColor: iconBg, marginBottom: 'var(--stack-sm)' }}
+      >
+        <Icon style={{ width: 18, height: 18, color: iconColor }} />
       </div>
-      <p className="font-medium text-sm mb-0.5" style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}>
+
+      {/* Value — large mono, same left edge as icon */}
+      <span
+        className="font-semibold"
+        style={{
+          color: 'var(--color-ink)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '1.75rem',
+          lineHeight: 1.2,
+          marginBottom: 'var(--stack-xs)',
+        }}
+      >
+        {value}
+      </span>
+
+      {/* Title */}
+      <p className="font-medium text-sm" style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}>
         {title}
       </p>
+
+      {/* Description */}
       <p className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
         {description}
       </p>
@@ -270,8 +289,11 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+      {/* Stats Grid — card-grid enforces equal-height siblings */}
+      <div
+        className="card-grid analytics-stats-grid"
+        style={{ gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-4)' }}
+      >
         {stats.map((s) => (
           <StatCard key={s.title} {...s} />
         ))}
@@ -288,7 +310,19 @@ export default function AnalyticsPage() {
             Event Type Breakdown
           </h2>
           {eventBreakdown.length === 0 ? (
-            <div className="py-8 text-center">
+            /*
+             * Empty state: centered flex block with defined min-height.
+             * Matches the centered empty state pattern used across all pages.
+             */
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: '160px',
+              }}
+            >
               <p className="type-body-sm" style={{ color: 'var(--color-ink-faint)' }}>
                 No events captured yet — events appear as they occur on-chain
               </p>
@@ -351,20 +385,32 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Ecosystem info */}
+      {/* Ecosystem info — --stack-xl (64px) top margin to visually separate from charts */}
       <div
         className="ll-card p-6"
-        style={{ backgroundColor: 'var(--color-trust-soft)', borderColor: 'rgba(43,58,143,0.15)' }}
+        style={{
+          backgroundColor: 'var(--color-trust-soft)',
+          borderColor: 'rgba(43,58,143,0.15)',
+          marginTop: 'var(--stack-xl)',
+        }}
       >
         <h2
-          className="type-heading mb-5"
-          style={{ color: 'var(--color-trust)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+          className="type-heading"
+          style={{
+            color: 'var(--color-trust)',
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.1rem',
+            marginBottom: 'var(--stack-md)',
+          }}
         >
           Ecosystem Fit
         </h2>
         <div className="grid md:grid-cols-2 gap-6 text-sm leading-relaxed" style={{ color: 'var(--color-trust)' }}>
           <div>
-            <h3 className="font-semibold mb-2" style={{ fontFamily: 'var(--font-ui)' }}>
+            <h3
+              className="font-semibold"
+              style={{ fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}
+            >
               What Stellar Was Missing
             </h3>
             <p style={{ opacity: 0.8 }}>
@@ -375,7 +421,10 @@ export default function AnalyticsPage() {
             </p>
           </div>
           <div>
-            <h3 className="font-semibold mb-2" style={{ fontFamily: 'var(--font-ui)' }}>
+            <h3
+              className="font-semibold"
+              style={{ fontFamily: 'var(--font-ui)', marginBottom: 'var(--stack-xs)' }}
+            >
               What LumenLock Adds
             </h3>
             <p style={{ opacity: 0.8 }}>
