@@ -68,6 +68,22 @@
   margin: 0 auto;
   padding: 0 var(--spacing-4);
 }
+.container-narrow {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+}
+
+@media (max-width: 768px) {
+  .container-wide, .container-narrow {
+    padding: 0 var(--spacing-3);
+  }
+}
+@media (max-width: 480px) {
+  .container-wide, .container-narrow {
+    padding: 0 var(--spacing-2);
+  }
+}
 
 /* ── Cards ── */
 .ll-card {

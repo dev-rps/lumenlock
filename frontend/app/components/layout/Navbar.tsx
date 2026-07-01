@@ -34,7 +34,7 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { address, status, connect, disconnect, isConnected, isTestnet, network } = useWallet();
+  const { address, status, connect, disconnect, isConnected, isTestnet } = useWallet();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [walletMenuOpen, setWalletMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -86,281 +86,277 @@ export function Navbar() {
       <header
         className="sticky top-0 z-50"
         style={{
-          backgroundColor: 'var(--color-bg)',
+          backgroundColor: 'rgba(10, 11, 13, 0.75)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--color-border)',
         }}
       >
-        <div className="container-wide">
-          <nav
-            className="flex items-center justify-between"
-            style={{ height: '64px' }}
-            aria-label="Primary navigation"
+        <div className="container-wide nav-row justify-between">
+          {/* ── Logo ── */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 shrink-0 group"
+            style={{ textDecoration: 'none' }}
+            aria-label="LumenLock home"
           >
-            {/* ── Logo ── */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 shrink-0 group"
-              style={{ textDecoration: 'none' }}
-              aria-label="LumenLock home"
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 28 28"
+              fill="none"
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:scale-105 shrink-0"
             >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 28 28"
-                fill="none"
-                aria-hidden="true"
-                className="transition-transform duration-200 group-hover:scale-105 shrink-0"
-              >
-                <rect x="1" y="1" width="26" height="26" rx="7" fill="var(--color-trust-soft)" stroke="var(--color-trust)" strokeWidth="1.5" />
-                <path d="M 10.5 9 A 5 5 0 0 0 10.5 19" stroke="var(--color-trust)" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 17.5 9 A 5 5 0 0 1 17.5 19" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <span
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 700,
-                  fontSize: '1.1rem',
-                  color: 'var(--color-ink)',
-                  letterSpacing: '-0.02em',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                LumenLock
-              </span>
+              <rect x="1" y="1" width="26" height="26" rx="7" fill="var(--color-trust-soft)" stroke="var(--color-trust)" strokeWidth="1.5" />
+              <path d="M 10.5 9 A 5 5 0 0 0 10.5 19" stroke="var(--color-trust)" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 17.5 9 A 5 5 0 0 1 17.5 19" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                fontSize: '1.1rem',
+                color: 'var(--color-ink)',
+                letterSpacing: '-0.02em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              LumenLock
+            </span>
+          </Link>
+
+          {/* ── Desktop Nav ── */}
+          <div className="hidden md:flex items-center gap-1" role="menubar">
+            {navItems.map(({ href, label, icon: Icon }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  role="menuitem"
+                  className={`nav-item${active ? ' nav-item-active' : ''}`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <Icon
+                    className="shrink-0"
+                    style={{
+                      width: 16,
+                      height: 16,
+                      color: active ? 'var(--color-ink)' : 'var(--color-ink-faint)',
+                    }}
+                  />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* ── Right Side: Settings + Wallet ── */}
+          <div className="flex items-center gap-2 shrink-0">
+
+            {/* Settings icon (desktop only) */}
+            <Link
+              href="/settings"
+              className="hidden md:flex items-center justify-center shrink-0"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-ink-faint)',
+                transition: 'color 0.15s ease, border-color 0.15s ease, background 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--color-ink)';
+                e.currentTarget.style.borderColor = 'var(--color-border-strong)';
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--color-ink-faint)';
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              aria-label="Settings"
+            >
+              <Settings className="shrink-0" style={{ width: 17, height: 17 }} />
             </Link>
 
-            {/* ── Desktop Nav ── */}
-            <div className="nav-desktop-links" role="menubar">
-              {navItems.map(({ href, label, icon: Icon }) => {
-                const active = isActive(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    role="menuitem"
-                    className={`nav-item${active ? ' nav-item-active' : ''}`}
-                    aria-current={active ? 'page' : undefined}
-                  >
-                    <Icon
-                      className="shrink-0"
+            {/* Wallet Button — 3 states */}
+            {isConnected && address ? (
+              /* ── Connected: pill with address ── */
+              <div className="relative" ref={walletMenuRef}>
+                <button
+                  onClick={() => setWalletMenuOpen(!walletMenuOpen)}
+                  className="wallet-btn flex items-center gap-2"
+                  style={{
+                    backgroundColor: 'var(--color-surface-raised)',
+                    border: '1px solid var(--color-border-strong)',
+                    borderRadius: 'var(--radius-pill)',
+                    color: 'var(--color-ink)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8125rem',
+                    padding: '7px 14px',
+                    height: '36px',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.15s ease, background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-accent-border)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border-strong)';
+                  }}
+                  id="wallet-menu-button"
+                  aria-expanded={walletMenuOpen}
+                  aria-haspopup="true"
+                  aria-controls="wallet-dropdown"
+                >
+                  <div
+                    className="rounded-full shrink-0"
+                    style={{ width: 8, height: 8, backgroundColor: 'var(--color-success)', flexShrink: 0 }}
+                    aria-hidden="true"
+                  />
+                  <span className="hidden sm:block">{formatAddress(address)}</span>
+                  {isTestnet && (
+                    <span
+                      className="hidden sm:block badge-base"
                       style={{
-                        width: 16,
-                        height: 16,
-                        color: active ? 'var(--color-ink)' : 'var(--color-ink-faint)',
+                        background: 'var(--color-warning-soft)',
+                        color: 'var(--color-warning)',
+                        fontSize: '0.65rem',
+                        padding: '1px 6px',
                       }}
-                    />
-                    {label}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* ── Right Side: Settings + Wallet ── */}
-            <div className="flex items-center gap-2 shrink-0">
-
-              {/* Settings icon (desktop only) */}
-              <Link
-                href="/settings"
-                className="hidden md:flex items-center justify-center shrink-0"
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border)',
-                  color: 'var(--color-ink-faint)',
-                  transition: 'color 0.15s ease, border-color 0.15s ease, background 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--color-ink)';
-                  e.currentTarget.style.borderColor = 'var(--color-border-strong)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--color-ink-faint)';
-                  e.currentTarget.style.borderColor = 'var(--color-border)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-                aria-label="Settings"
-              >
-                <Settings className="shrink-0" style={{ width: 17, height: 17 }} />
-              </Link>
-
-              {/* Wallet Button — 3 states */}
-              {isConnected && address ? (
-                /* ── Connected: pill with address ── */
-                <div className="relative" ref={walletMenuRef}>
-                  <button
-                    onClick={() => setWalletMenuOpen(!walletMenuOpen)}
-                    className="wallet-btn flex items-center gap-2"
-                    style={{
-                      backgroundColor: 'var(--color-surface-raised)',
-                      border: '1px solid var(--color-border-strong)',
-                      borderRadius: 'var(--radius-pill)',
-                      color: 'var(--color-ink)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.8125rem',
-                      padding: '7px 14px',
-                      height: '36px',
-                      cursor: 'pointer',
-                      transition: 'border-color 0.15s ease, background 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-accent-border)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-border-strong)';
-                    }}
-                    id="wallet-menu-button"
-                    aria-expanded={walletMenuOpen}
-                    aria-haspopup="true"
-                    aria-controls="wallet-dropdown"
-                  >
-                    <div
-                      className="rounded-full shrink-0"
-                      style={{ width: 8, height: 8, backgroundColor: 'var(--color-success)', flexShrink: 0 }}
-                      aria-hidden="true"
-                    />
-                    <span className="hidden sm:block">{formatAddress(address)}</span>
-                    {isTestnet && (
-                      <span
-                        className="hidden sm:block badge-base"
-                        style={{
-                          background: 'var(--color-warning-soft)',
-                          color: 'var(--color-warning)',
-                          fontSize: '0.65rem',
-                          padding: '1px 6px',
-                        }}
-                      >
-                        Testnet
-                      </span>
-                    )}
-                    <ChevronDown
-                      className={`shrink-0 transition-transform duration-200 ${walletMenuOpen ? 'rotate-180' : ''}`}
-                      style={{ width: 14, height: 14, color: 'var(--color-ink-muted)' }}
-                    />
-                  </button>
-
-                  {walletMenuOpen && (
-                    <div
-                      id="wallet-dropdown"
-                      className="absolute right-0 mt-2 w-64 ll-card py-2 animate-fade-up"
-                      style={{ boxShadow: 'var(--shadow-dropdown)', zIndex: 100 }}
-                      role="menu"
                     >
-                      {/* Full address */}
-                      <div
-                        className="px-4 py-3"
-                        style={{ borderBottom: '1px solid var(--color-border)' }}
-                      >
-                        <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
-                          Connected Wallet
-                        </p>
-                        <p
-                          className="text-xs break-all leading-relaxed"
-                          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
-                        >
-                          {address}
-                        </p>
-                      </div>
-
-                      {/* Copy address */}
-                      <button
-                        onClick={copyAddress}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
-                        style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        role="menuitem"
-                        aria-label="Copy wallet address"
-                      >
-                        {copied ? (
-                          <Check className="shrink-0" style={{ width: 15, height: 15, color: 'var(--color-success)' }} />
-                        ) : (
-                          <Copy className="shrink-0" style={{ width: 15, height: 15 }} />
-                        )}
-                        {copied ? 'Copied!' : 'Copy Address'}
-                      </button>
-
-                      {/* View on explorer */}
-                      <button
-                        onClick={openExplorer}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
-                        style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        role="menuitem"
-                        aria-label="View wallet on Stellar Explorer"
-                      >
-                        <ExternalLink className="shrink-0" style={{ width: 15, height: 15 }} />
-                        View on Explorer
-                      </button>
-
-                      {/* Disconnect */}
-                      <div style={{ borderTop: '1px solid var(--color-border)' }} className="mt-1 pt-1">
-                        <button
-                          onClick={() => { disconnect(); setWalletMenuOpen(false); }}
-                          className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
-                          style={{ color: 'var(--color-danger)', fontFamily: 'var(--font-ui)' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-danger-soft)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                          role="menuitem"
-                        >
-                          <LogOut className="shrink-0" style={{ width: 15, height: 15 }} />
-                          Disconnect
-                        </button>
-                      </div>
-                    </div>
+                      Testnet
+                    </span>
                   )}
-                </div>
-
-              ) : status === 'connecting' ? (
-                /* ── Connecting: disabled state ── */
-                <button
-                  disabled
-                  className="wallet-btn btn-primary flex items-center justify-center gap-2"
-                  style={{ opacity: 0.65, cursor: 'not-allowed' }}
-                  id="connect-wallet-btn"
-                  aria-label="Connecting wallet…"
-                >
-                  <SealIcon variant="loading" size={16} className="shrink-0" />
-                  Connecting…
+                  <ChevronDown
+                    className={`shrink-0 transition-transform duration-200 ${walletMenuOpen ? 'rotate-180' : ''}`}
+                    style={{ width: 14, height: 14, color: 'var(--color-ink-muted)' }}
+                  />
                 </button>
 
-              ) : (
-                /* ── Disconnected ── */
-                <button
-                  onClick={connect}
-                  className="wallet-btn btn-primary flex items-center justify-center gap-2"
-                  id="connect-wallet-btn"
-                >
-                  <Wallet className="shrink-0" style={{ width: 15, height: 15 }} />
-                  Connect Wallet
-                </button>
-              )}
+                {walletMenuOpen && (
+                  <div
+                    id="wallet-dropdown"
+                    className="absolute right-0 mt-2 w-64 ll-card py-2 animate-fade-up"
+                    style={{ boxShadow: 'var(--shadow-dropdown)', zIndex: 100 }}
+                    role="menu"
+                  >
+                    {/* Full address */}
+                    <div
+                      className="px-4 py-3"
+                      style={{ borderBottom: '1px solid var(--color-border)' }}
+                    >
+                      <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
+                        Connected Wallet
+                      </p>
+                      <p
+                        className="text-xs break-all leading-relaxed"
+                        style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
+                      >
+                        {address}
+                      </p>
+                    </div>
 
-              {/* Mobile Menu Toggle */}
+                    {/* Copy address */}
+                    <button
+                      onClick={copyAddress}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
+                      style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      role="menuitem"
+                      aria-label="Copy wallet address"
+                    >
+                      {copied ? (
+                        <Check className="shrink-0" style={{ width: 15, height: 15, color: 'var(--color-success)' }} />
+                      ) : (
+                        <Copy className="shrink-0" style={{ width: 15, height: 15 }} />
+                      )}
+                      {copied ? 'Copied!' : 'Copy Address'}
+                    </button>
+
+                    {/* View on explorer */}
+                    <button
+                      onClick={openExplorer}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
+                      style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      role="menuitem"
+                      aria-label="View wallet on Stellar Explorer"
+                    >
+                      <ExternalLink className="shrink-0" style={{ width: 15, height: 15 }} />
+                      View on Explorer
+                    </button>
+
+                    {/* Disconnect */}
+                    <div style={{ borderTop: '1px solid var(--color-border)' }} className="mt-1 pt-1">
+                      <button
+                        onClick={() => { disconnect(); setWalletMenuOpen(false); }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
+                        style={{ color: 'var(--color-danger)', fontFamily: 'var(--font-ui)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-danger-soft)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        role="menuitem"
+                      >
+                        <LogOut className="shrink-0" style={{ width: 15, height: 15 }} />
+                        Disconnect
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            ) : status === 'connecting' ? (
+              /* ── Connecting: disabled state ── */
               <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden flex items-center justify-center rounded-lg transition-colors"
-                style={{
-                  color: 'var(--color-ink-muted)',
-                  width: 36,
-                  height: 36,
-                  border: '1px solid var(--color-border)',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-                aria-expanded={mobileOpen}
-                aria-controls="mobile-nav"
+                disabled
+                className="wallet-btn btn-primary flex items-center justify-center gap-2"
+                style={{ opacity: 0.65, cursor: 'not-allowed' }}
+                id="connect-wallet-btn"
+                aria-label="Connecting wallet…"
               >
-                {mobileOpen
-                  ? <X className="shrink-0" style={{ width: 20, height: 20 }} />
-                  : <Menu className="shrink-0" style={{ width: 20, height: 20 }} />
-                }
+                <SealIcon variant="loading" size={16} className="shrink-0" />
+                Connecting…
               </button>
-            </div>
-          </nav>
+
+            ) : (
+              /* ── Disconnected ── */
+              <button
+                onClick={connect}
+                className="wallet-btn btn-primary flex items-center justify-center gap-2"
+                id="connect-wallet-btn"
+              >
+                <Wallet className="shrink-0" style={{ width: 15, height: 15 }} />
+                Connect Wallet
+              </button>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden flex items-center justify-center rounded-lg transition-colors"
+              style={{
+                color: 'var(--color-ink-muted)',
+                width: 36,
+                height: 36,
+                border: '1px solid var(--color-border)',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+            >
+              {mobileOpen
+                ? <X className="shrink-0" style={{ width: 20, height: 20 }} />
+                : <Menu className="shrink-0" style={{ width: 20, height: 20 }} />
+              }
+            </button>
+          </div>
         </div>
 
         {/* Network Warning Banner */}
