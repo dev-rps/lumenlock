@@ -36,7 +36,7 @@ const eventConfig: Record<
   dispute_raised:         { label: 'Dispute Raised',    icon: AlertTriangle, bgColor: 'var(--color-danger-soft)',  iconColor: 'var(--color-danger)' },
   dispute_resolved:       { label: 'Dispute Resolved',  icon: Gavel,         bgColor: 'var(--color-warning-soft)', iconColor: 'var(--color-warning)' },
   listing_created:        { label: 'Listing Created',   icon: Package,       bgColor: 'var(--color-accent-soft)',  iconColor: 'var(--color-accent)' },
-  listing_status_updated: { label: 'Listing Updated',   icon: RefreshCcw,    bgColor: 'var(--color-surface-sunken)', iconColor: 'var(--color-ink-faint)' },
+  listing_status_updated: { label: 'Listing Updated',   icon: RefreshCcw,    bgColor: 'var(--color-surface-raised)', iconColor: 'var(--color-ink-faint)' },
 };
 
 function timeAgo(dateVal: Date | string): string {
@@ -52,7 +52,7 @@ function EventRow({ event }: { event: ContractEvent }) {
   const config = eventConfig[event.type] ?? {
     label: event.type,
     icon: Activity,
-    bgColor: 'var(--color-surface-sunken)',
+    bgColor: 'var(--color-surface-raised)',
     iconColor: 'var(--color-ink-faint)',
   };
   const Icon = config.icon;
@@ -62,50 +62,47 @@ function EventRow({ event }: { event: ContractEvent }) {
     <div
       className="flex items-start gap-4 group"
       style={{
-        padding: '1rem 0',
+        padding: 'var(--spacing-2) 0',
         borderBottom: '1px solid var(--color-border)',
       }}
     >
-      {/* Timeline: icon + vertical line connector */}
-      <div className="flex flex-col items-center shrink-0" style={{ width: 36 }}>
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: config.bgColor }}
-        >
-          <Icon className="w-4 h-4" style={{ color: config.iconColor }} />
-        </div>
+      {/* Icon slot */}
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: config.bgColor,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <Icon style={{ width: 16, height: 16, color: config.iconColor }} />
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 pt-1">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span
-            className="font-medium text-sm"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
-          >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap" style={{ marginBottom: 'var(--spacing-1)' }}>
+          <span className="type-body" style={{ color: 'var(--color-ink)' }}>
             {config.label}
           </span>
-          <span
-            className="text-xs"
-            style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
-          >
+          <span className="type-mono-sm" style={{ color: 'var(--color-ink-faint)' }}>
             Ledger #{event.ledger}
           </span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-xs"
-            style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
-          >
+          <span className="type-mono-sm" style={{ color: 'var(--color-ink-faint)' }}>
             {formatAddress(event.contractId)}
           </span>
-          <span className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
+          <span className="type-body-sm" style={{ color: 'var(--color-ink-faint)' }}>
             · {timeAgo(event.timestamp)}
           </span>
         </div>
       </div>
 
-      {/* Explorer link (appears on hover) */}
+      {/* Explorer link (hover-reveal) */}
       {event.txHash && (
         <a
           href={`${explorerUrl}/tx/${event.txHash}`}
@@ -114,8 +111,8 @@ function EventRow({ event }: { event: ContractEvent }) {
           className="shrink-0 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
           style={{ color: 'var(--color-ink-faint)' }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--color-trust)';
-            e.currentTarget.style.backgroundColor = 'var(--color-trust-soft)';
+            e.currentTarget.style.color = 'var(--color-accent)';
+            e.currentTarget.style.backgroundColor = 'var(--color-accent-soft)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.color = 'var(--color-ink-faint)';
@@ -123,7 +120,7 @@ function EventRow({ event }: { event: ContractEvent }) {
           }}
           aria-label="View transaction on Stellar Explorer"
         >
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink style={{ width: 14, height: 14 }} />
         </a>
       )}
     </div>
@@ -156,99 +153,111 @@ export default function ActivityPage() {
   ];
 
   return (
-    <div className="container-wide py-12">
+    <div className="container-wide" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div
+        className="flex flex-col md:flex-row md:items-end justify-between"
+        style={{ gap: 'var(--spacing-3)', marginBottom: 'var(--spacing-6)' }}
+      >
         <div>
-          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
-            On-chain events
+          <p className="type-caption" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-1)' }}>
+            ON-CHAIN EVENTS
           </p>
-          <h1
-            className="type-display-lg mb-2"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-          >
+          <h1 className="type-display-lg" style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}>
             Activity Feed
           </h1>
+          {/* Live indicator */}
           <div className="flex items-center gap-2 mt-1">
             <div
-              className="w-2 h-2 rounded-full"
+              className="rounded-full"
               style={{
+                width: 8,
+                height: 8,
                 backgroundColor: isLive ? 'var(--color-success)' : 'var(--color-ink-faint)',
                 boxShadow: isLive ? '0 0 0 3px var(--color-success-soft)' : 'none',
+                flexShrink: 0,
               }}
             />
             <span className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
               {isLive ? 'Live' : 'Paused'} · Ledger{' '}
               <span style={{ fontFamily: 'var(--font-mono)' }}>{lastLedger || '—'}</span>
             </span>
-            <Wifi className="w-3.5 h-3.5" style={{ color: 'var(--color-ink-faint)' }} />
+            <Wifi style={{ width: 14, height: 14, color: 'var(--color-ink-faint)' }} />
           </div>
         </div>
+
         <button
           onClick={() => setIsLive(!isLive)}
           className="btn-ghost w-fit"
-          style={
-            isLive
-              ? {
-                  color: 'var(--color-success)',
-                  borderColor: 'rgba(31,138,77,0.3)',
-                  backgroundColor: 'var(--color-success-soft)',
-                }
-              : {}
-          }
+          style={isLive ? {
+            color: 'var(--color-success)',
+            borderColor: 'rgba(34,197,94,0.3)',
+            backgroundColor: 'var(--color-success-soft)',
+          } : {}}
         >
           {isLive ? 'Pause Live' : 'Resume Live'}
         </button>
       </div>
 
-      {/* Filter chips — flex-wrap + explicit padding so chips never overflow */}
+      {/* Filter chips */}
       <div
         className="flex flex-wrap items-center"
-        style={{ gap: 'var(--stack-xs)', marginBottom: 'var(--stack-lg)' }}
+        style={{ gap: 'var(--spacing-1)', marginBottom: 'var(--spacing-4)' }}
       >
-        {filterOptions.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setFilter(value)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '8px 16px',      /* explicit — label always centered, height auto */
-              whiteSpace: 'nowrap',
-              borderRadius: '9999px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              fontFamily: 'var(--font-ui)',
-              border: `1px solid ${filter === value ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
-              backgroundColor: filter === value ? 'var(--color-trust-soft)' : 'var(--color-surface)',
-              color: filter === value ? 'var(--color-trust)' : 'var(--color-ink-muted)',
-              transition: 'all 150ms',
-              cursor: 'pointer',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+        {filterOptions.map(({ value, label }) => {
+          const active = filter === value;
+          return (
+            <button
+              key={value}
+              onClick={() => setFilter(value)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '6px 16px',
+                whiteSpace: 'nowrap',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                fontFamily: 'var(--font-ui)',
+                border: `1px solid ${active ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
+                backgroundColor: active ? 'var(--color-accent-soft)' : 'transparent',
+                color: active ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+                transition: 'all 150ms',
+                cursor: 'pointer',
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Event list */}
-      <div className="ll-card p-6">
+      <div className="ll-card" style={{ padding: 'var(--spacing-3)' }}>
         {filtered.length === 0 ? (
           <EmptyState
             title="No events yet"
             description="Events from the LumenLock contracts will appear here in real-time as they occur on-chain."
             icon={
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: 'var(--color-trust-soft)' }}
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-trust-soft)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <Activity className="w-7 h-7" style={{ color: 'var(--color-trust)' }} />
+                <Activity style={{ width: 28, height: 28, color: 'var(--color-trust)' }} />
               </div>
             }
+            className="min-h-[320px] border-0 shadow-none bg-transparent"
           />
         ) : (
           <div>
-            <p className="type-caption mb-4" style={{ color: 'var(--color-ink-faint)' }}>
+            <p className="type-caption" style={{ color: 'var(--color-ink-faint)', marginBottom: 'var(--spacing-2)' }}>
               {filtered.length} event{filtered.length !== 1 ? 's' : ''}
             </p>
             {filtered.map((event) => (

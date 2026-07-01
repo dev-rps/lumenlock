@@ -19,26 +19,37 @@ export function ErrorState({
   className = '',
 }: ErrorStateProps) {
   return (
-    <div className={`ll-card flex flex-col items-center justify-center py-16 px-8 text-center ${className}`}>
+    <div
+      className={`ll-card flex flex-col items-center justify-center text-center ${className}`}
+      style={{
+        padding: 'var(--spacing-8) var(--spacing-4)',
+        minHeight: '320px',
+        gap: 'var(--spacing-2)',
+      }}
+    >
       <div
-        className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
-        style={{ background: 'var(--color-danger-soft)' }}
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--color-danger-soft)',
+        }}
       >
-        <AlertCircle className="w-7 h-7" style={{ color: 'var(--color-danger)' }} />
+        <AlertCircle style={{ width: 28, height: 28, color: 'var(--color-danger)' }} />
       </div>
-      <h3
-        className="type-heading mb-2"
-        style={{ color: 'var(--color-ink)' }}
-      >
+      <h3 className="type-heading" style={{ color: 'var(--color-ink)' }}>
         {title}
       </h3>
       {message && (
-        <p className="type-body-sm mb-6 max-w-sm" style={{ color: 'var(--color-ink-muted)' }}>
+        <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)', maxWidth: '40ch' }}>
           {message}
         </p>
       )}
       {onRetry && (
-        <button onClick={onRetry} className="btn-ghost">
+        <button onClick={onRetry} className="btn-ghost" style={{ marginTop: 'var(--spacing-1)' }}>
           Try again
         </button>
       )}

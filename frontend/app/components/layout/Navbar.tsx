@@ -86,23 +86,17 @@ export function Navbar() {
       <header
         className="sticky top-0 z-50"
         style={{
-          backgroundColor: 'var(--color-surface)',
-          boxShadow: 'var(--shadow-nav)',
+          backgroundColor: 'var(--color-bg)',
+          borderBottom: '1px solid var(--color-border)',
         }}
       >
         <div className="container-wide">
-          {/*
-           * NavRow: fixed 64px height, flex, align-items:center.
-           * ALL children are vertically centered by this parent.
-           * No child is allowed to set its own height independently.
-           */}
           <nav
             className="flex items-center justify-between"
             style={{ height: '64px' }}
             aria-label="Primary navigation"
           >
-
-            {/* ── Logo ────────────────────────────────────────────────────── */}
+            {/* ── Logo ── */}
             <Link
               href="/"
               className="flex items-center gap-2 shrink-0 group"
@@ -118,24 +112,24 @@ export function Navbar() {
                 className="transition-transform duration-200 group-hover:scale-105 shrink-0"
               >
                 <rect x="1" y="1" width="26" height="26" rx="7" fill="var(--color-trust-soft)" stroke="var(--color-trust)" strokeWidth="1.5" />
-                {/* Left arc */}
                 <path d="M 10.5 9 A 5 5 0 0 0 10.5 19" stroke="var(--color-trust)" strokeWidth="2" strokeLinecap="round" />
-                {/* Right arc */}
                 <path d="M 17.5 9 A 5 5 0 0 1 17.5 19" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
               </svg>
               <span
-                className="font-semibold text-lg tracking-tight"
-                style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  color: 'var(--color-ink)',
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 LumenLock
               </span>
             </Link>
 
-            {/* ── Desktop Nav ─────────────────────────────────────────────── */}
-            {/*
-             * nav-desktop-links: display:flex at md+, gap:32px at md, gap:40px at xl.
-             * Every item has white-space:nowrap + shrink-0 — labels NEVER wrap.
-             */}
+            {/* ── Desktop Nav ── */}
             <div className="nav-desktop-links" role="menubar">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
@@ -144,51 +138,46 @@ export function Navbar() {
                     key={href}
                     href={href}
                     role="menuitem"
-                    className="flex items-center gap-2 rounded-lg text-sm font-medium transition-all duration-150 shrink-0"
-                    style={{
-                      color: active ? 'var(--color-trust)' : 'var(--color-ink-muted)',
-                      backgroundColor: active ? 'var(--color-trust-soft)' : 'transparent',
-                      fontFamily: 'var(--font-ui)',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      whiteSpace: 'nowrap',
-                      textDecoration: 'none',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!active) {
-                        e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)';
-                        e.currentTarget.style.color = 'var(--color-ink)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!active) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = 'var(--color-ink-muted)';
-                      }
-                    }}
+                    className={`nav-item${active ? ' nav-item-active' : ''}`}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon className="shrink-0" style={{ width: 16, height: 16 }} />
+                    <Icon
+                      className="shrink-0"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        color: active ? 'var(--color-ink)' : 'var(--color-ink-faint)',
+                      }}
+                    />
                     {label}
                   </Link>
                 );
               })}
             </div>
 
-            {/* ── Right Side: Settings + Wallet ──────────────────────────── */}
+            {/* ── Right Side: Settings + Wallet ── */}
             <div className="flex items-center gap-2 shrink-0">
 
               {/* Settings icon (desktop only) */}
               <Link
                 href="/settings"
-                className="hidden md:flex items-center justify-center p-2 rounded-lg transition-all duration-150 shrink-0"
-                style={{ color: 'var(--color-ink-faint)', width: 36, height: 36 }}
+                className="hidden md:flex items-center justify-center shrink-0"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-ink-faint)',
+                  transition: 'color 0.15s ease, border-color 0.15s ease, background 0.15s ease',
+                }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--color-ink-muted)';
-                  e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)';
+                  e.currentTarget.style.color = 'var(--color-ink)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-strong)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = 'var(--color-ink-faint)';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }}
                 aria-label="Settings"
@@ -196,24 +185,30 @@ export function Navbar() {
                 <Settings className="shrink-0" style={{ width: 17, height: 17 }} />
               </Link>
 
-              {/*
-               * Wallet Button — 3 states.
-               * All 3 share the .wallet-btn class (min-width:160px) so the nav
-               * row NEVER changes height or shifts layout between states.
-               */}
+              {/* Wallet Button — 3 states */}
               {isConnected && address ? (
-                /* ── Connected: pill with address + network badge ── */
+                /* ── Connected: pill with address ── */
                 <div className="relative" ref={walletMenuRef}>
                   <button
                     onClick={() => setWalletMenuOpen(!walletMenuOpen)}
-                    className="wallet-btn flex items-center gap-2 rounded-lg text-sm font-medium transition-all duration-150"
+                    className="wallet-btn flex items-center gap-2"
                     style={{
-                      backgroundColor: 'var(--color-trust-soft)',
-                      border: '1.5px solid rgba(43,58,143,0.2)',
-                      color: 'var(--color-trust)',
+                      backgroundColor: 'var(--color-surface-raised)',
+                      border: '1px solid var(--color-border-strong)',
+                      borderRadius: 'var(--radius-pill)',
+                      color: 'var(--color-ink)',
                       fontFamily: 'var(--font-mono)',
-                      padding: '7px 12px',
+                      fontSize: '0.8125rem',
+                      padding: '7px 14px',
                       height: '36px',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s ease, background 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-accent-border)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border-strong)';
                     }}
                     id="wallet-menu-button"
                     aria-expanded={walletMenuOpen}
@@ -232,7 +227,6 @@ export function Navbar() {
                         style={{
                           background: 'var(--color-warning-soft)',
                           color: 'var(--color-warning)',
-                          border: '1px solid rgba(181,121,10,0.2)',
                           fontSize: '0.65rem',
                           padding: '1px 6px',
                         }}
@@ -242,7 +236,7 @@ export function Navbar() {
                     )}
                     <ChevronDown
                       className={`shrink-0 transition-transform duration-200 ${walletMenuOpen ? 'rotate-180' : ''}`}
-                      style={{ width: 14, height: 14 }}
+                      style={{ width: 14, height: 14, color: 'var(--color-ink-muted)' }}
                     />
                   </button>
 
@@ -274,7 +268,7 @@ export function Navbar() {
                         onClick={copyAddress}
                         className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
                         style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)')}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                         role="menuitem"
                         aria-label="Copy wallet address"
@@ -292,7 +286,7 @@ export function Navbar() {
                         onClick={openExplorer}
                         className="flex items-center gap-2 w-full px-4 py-2 text-sm transition-colors"
                         style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-ui)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)')}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-raised)')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                         role="menuitem"
                         aria-label="View wallet on Stellar Explorer"
@@ -323,17 +317,8 @@ export function Navbar() {
                 /* ── Connecting: disabled state ── */
                 <button
                   disabled
-                  className="wallet-btn flex items-center justify-center gap-2 rounded-lg text-sm font-medium"
-                  style={{
-                    border: '1.5px solid var(--color-trust)',
-                    color: 'var(--color-trust)',
-                    backgroundColor: 'var(--color-trust-soft)',
-                    opacity: 0.75,
-                    cursor: 'not-allowed',
-                    fontFamily: 'var(--font-ui)',
-                    padding: '7px 12px',
-                    height: '36px',
-                  }}
+                  className="wallet-btn btn-primary flex items-center justify-center gap-2"
+                  style={{ opacity: 0.65, cursor: 'not-allowed' }}
                   id="connect-wallet-btn"
                   aria-label="Connecting wallet…"
                 >
@@ -345,23 +330,7 @@ export function Navbar() {
                 /* ── Disconnected ── */
                 <button
                   onClick={connect}
-                  className="wallet-btn flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all duration-150"
-                  style={{
-                    border: '1.5px solid var(--color-trust)',
-                    color: 'var(--color-trust)',
-                    backgroundColor: 'transparent',
-                    fontFamily: 'var(--font-ui)',
-                    padding: '7px 12px',
-                    height: '36px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--color-trust)';
-                    e.currentTarget.style.color = '#FFFFFF';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = 'var(--color-trust)';
-                  }}
+                  className="wallet-btn btn-primary flex items-center justify-center gap-2"
                   id="connect-wallet-btn"
                 >
                   <Wallet className="shrink-0" style={{ width: 15, height: 15 }} />
@@ -372,9 +341,14 @@ export function Navbar() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden flex items-center justify-center p-2 rounded-lg transition-colors"
-                style={{ color: 'var(--color-ink-muted)', width: 36, height: 36 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-sunken)')}
+                className="md:hidden flex items-center justify-center rounded-lg transition-colors"
+                style={{
+                  color: 'var(--color-ink-muted)',
+                  width: 36,
+                  height: 36,
+                  border: '1px solid var(--color-border)',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileOpen}
@@ -395,7 +369,7 @@ export function Navbar() {
             className="flex items-center justify-center gap-2 px-4 text-sm font-medium"
             style={{
               backgroundColor: 'var(--color-danger-soft)',
-              borderTop: '1px solid rgba(194,59,59,0.15)',
+              borderTop: '1px solid rgba(239,68,68,0.15)',
               color: 'var(--color-danger)',
               fontFamily: 'var(--font-ui)',
               height: '40px',
@@ -421,7 +395,7 @@ export function Navbar() {
         <div
           className="fixed inset-0 z-40 md:hidden"
           aria-hidden="true"
-          style={{ backgroundColor: 'rgba(21,24,31,0.4)' }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -434,7 +408,7 @@ export function Navbar() {
         aria-label="Mobile navigation"
         aria-hidden={!mobileOpen}
       >
-        {/* Drawer Header — same 64px height as desktop nav */}
+        {/* Drawer Header */}
         <div
           className="flex items-center justify-between px-5 shrink-0"
           style={{ height: '64px', borderBottom: '1px solid var(--color-border)' }}
@@ -450,7 +424,7 @@ export function Navbar() {
               <path d="M 10.5 9 A 5 5 0 0 0 10.5 19" stroke="var(--color-trust)" strokeWidth="2" strokeLinecap="round" />
               <path d="M 17.5 9 A 5 5 0 0 1 17.5 19" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontWeight: 700 }}>
               LumenLock
             </span>
           </Link>
@@ -473,15 +447,18 @@ export function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium mb-1 transition-colors"
-                style={{
-                  color: active ? 'var(--color-trust)' : 'var(--color-ink-muted)',
-                  backgroundColor: active ? 'var(--color-trust-soft)' : 'transparent',
-                  textDecoration: 'none',
-                }}
+                className={`nav-item w-full mb-1${active ? ' nav-item-active' : ''}`}
+                style={{ padding: '10px 12px', fontSize: '0.9375rem' }}
                 aria-current={active ? 'page' : undefined}
               >
-                <Icon className="shrink-0" style={{ width: 17, height: 17 }} />
+                <Icon
+                  className="shrink-0"
+                  style={{
+                    width: 17,
+                    height: 17,
+                    color: active ? 'var(--color-ink)' : 'var(--color-ink-faint)',
+                  }}
+                />
                 {label}
               </Link>
             );
@@ -489,10 +466,10 @@ export function Navbar() {
           <Link
             href="/settings"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors"
-            style={{ color: 'var(--color-ink-muted)', textDecoration: 'none' }}
+            className="nav-item w-full"
+            style={{ padding: '10px 12px', fontSize: '0.9375rem' }}
           >
-            <Settings className="shrink-0" style={{ width: 17, height: 17 }} />
+            <Settings className="shrink-0" style={{ width: 17, height: 17, color: 'var(--color-ink-faint)' }} />
             Settings
           </Link>
         </div>
@@ -503,10 +480,10 @@ export function Navbar() {
           style={{ borderTop: '1px solid var(--color-border)' }}
         >
           {isConnected && address ? (
-            <div>
-              <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>Connected</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)' }}>
+              <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>Connected</p>
               <p
-                className="text-xs mb-3 break-all"
+                className="text-xs break-all"
                 style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
               >
                 {formatAddress(address)}
@@ -514,7 +491,7 @@ export function Navbar() {
               <button
                 onClick={() => { disconnect(); setMobileOpen(false); }}
                 className="btn-ghost w-full text-sm"
-                style={{ color: 'var(--color-danger)', borderColor: 'rgba(194,59,59,0.3)' }}
+                style={{ color: 'var(--color-danger)', borderColor: 'rgba(239,68,68,0.3)' }}
               >
                 <LogOut style={{ width: 15, height: 15 }} />
                 Disconnect
@@ -524,7 +501,7 @@ export function Navbar() {
             <button
               onClick={() => { connect(); setMobileOpen(false); }}
               disabled={status === 'connecting'}
-              className="btn-secondary w-full"
+              className="btn-primary w-full"
             >
               <Wallet style={{ width: 15, height: 15 }} />
               {status === 'connecting' ? 'Connecting…' : 'Connect Wallet'}

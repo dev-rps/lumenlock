@@ -134,22 +134,22 @@ export function SealIcon({ variant = 'static', size = 80, className = '' }: Seal
       <path
         d={`M ${cx - arcR * 0.15} ${cy - arcR}
             A ${arcR} ${arcR} 0 0 0 ${cx - arcR * 0.15} ${cy + arcR}`}
-        stroke="var(--color-border)"
+        stroke="var(--color-border-strong)"
         strokeWidth={strokeW}
         strokeLinecap="round"
       />
-      <circle cx={cx - arcR * 0.15} cy={cy - arcR} r={strokeW * 0.8} fill="var(--color-border)" />
-      <circle cx={cx - arcR * 0.15} cy={cy + arcR} r={strokeW * 0.8} fill="var(--color-border)" />
+      <circle cx={cx - arcR * 0.15} cy={cy - arcR} r={strokeW * 0.8} fill="var(--color-border-strong)" />
+      <circle cx={cx - arcR * 0.15} cy={cy + arcR} r={strokeW * 0.8} fill="var(--color-border-strong)" />
 
       <path
         d={`M ${cx + arcR * 0.15} ${cy - arcR}
             A ${arcR} ${arcR} 0 0 1 ${cx + arcR * 0.15} ${cy + arcR}`}
-        stroke="var(--color-surface-sunken)"
+        stroke="var(--color-surface-raised)"
         strokeWidth={strokeW}
         strokeLinecap="round"
       />
-      <circle cx={cx + arcR * 0.15} cy={cy - arcR} r={strokeW * 0.8} fill="var(--color-surface-sunken)" />
-      <circle cx={cx + arcR * 0.15} cy={cy + arcR} r={strokeW * 0.8} fill="var(--color-surface-sunken)" />
+      <circle cx={cx + arcR * 0.15} cy={cy - arcR} r={strokeW * 0.8} fill="var(--color-surface-raised)" />
+      <circle cx={cx + arcR * 0.15} cy={cy + arcR} r={strokeW * 0.8} fill="var(--color-surface-raised)" />
     </svg>
   );
 }

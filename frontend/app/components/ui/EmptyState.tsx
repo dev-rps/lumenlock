@@ -25,10 +25,11 @@ export function EmptyState({ title, description, action, icon, className = '' }:
         justifyContent: 'center',
         textAlign: 'center',
         minHeight: '400px',
-        padding: 'var(--stack-xl) var(--spacing-6)',
+        padding: 'var(--spacing-6) var(--spacing-4)',
+        gap: 'var(--spacing-2)',
       }}
     >
-      <div style={{ marginBottom: 'var(--stack-md)' }}>
+      <div>
         {icon ?? <SealIcon variant="static" size={72} />}
       </div>
       <h3
@@ -36,21 +37,17 @@ export function EmptyState({ title, description, action, icon, className = '' }:
         style={{
           color: 'var(--color-ink)',
           fontFamily: 'var(--font-display)',
-          marginBottom: 'var(--stack-xs)',
         }}
       >
         {title}
       </h3>
       <p
         className="type-body-sm max-w-xs"
-        style={{
-          color: 'var(--color-ink-muted)',
-          marginBottom: action ? 'var(--stack-lg)' : 0,
-        }}
+        style={{ color: 'var(--color-ink-muted)' }}
       >
         {description}
       </p>
-      {action && <div>{action}</div>}
+      {action && <div style={{ marginTop: 'var(--spacing-1)' }}>{action}</div>}
     </div>
   );
 }

@@ -13,7 +13,6 @@ import {
 import {
   Plus,
   Package,
-  ShoppingCart,
   AlertCircle,
   CheckCircle2,
   ArrowUpRight,
@@ -26,49 +25,25 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 
-// ─── Skeleton fallback for Suspense ──────────────────────────────────────────
+// ─── Skeleton fallback ────────────────────────────────────────────────────────
 function DashboardSkeleton() {
   return (
-    <div className="container-wide py-12">
-      {/* Header skeleton */}
-      <div className="flex items-end justify-between mb-10">
-        <div className="space-y-2">
-          <Skeleton height={14} width={80} />
+    <div className="container-wide" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
+      <div className="flex items-end justify-between" style={{ marginBottom: 'var(--spacing-6)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Skeleton height={12} width={80} />
           <Skeleton height={40} width={200} />
-          <Skeleton height={16} width={150} />
+          <Skeleton height={14} width={150} />
         </div>
-        <Skeleton height={40} width={140} style={{ borderRadius: 10 }} />
+        <Skeleton height={40} width={140} style={{ borderRadius: 9999 }} />
       </div>
-      {/* Stats row skeleton */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 mb-10 ll-card overflow-hidden">
+      <div className="card-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-6)' }}>
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="p-6 space-y-2"
-            style={{ borderRight: i < 4 ? '1px solid var(--color-border)' : undefined }}
-          >
+          <div key={i} className="ll-card" style={{ padding: 'var(--spacing-3)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Skeleton height={10} width={80} />
             <Skeleton height={32} width={60} />
-            <Skeleton height={10} width={100} />
           </div>
         ))}
-      </div>
-      {/* Listings grid skeleton */}
-      <div className="space-y-4">
-        <Skeleton height={20} width={120} />
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="ll-card p-5 space-y-3">
-              <Skeleton height={16} width="75%" />
-              <Skeleton height={12} width="50%" />
-              <Skeleton height={10} width="88%" />
-              <div className="pt-3 flex justify-between" style={{ borderTop: '1px solid var(--color-surface-sunken)' }}>
-                <Skeleton height={22} width={80} />
-                <Skeleton height={22} width={50} />
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -77,29 +52,37 @@ function DashboardSkeleton() {
 // ─── Wallet Required ──────────────────────────────────────────────────────────
 function WalletRequiredState({ onConnect }: { onConnect: () => void }) {
   return (
-    <div className="container-wide py-12">
-      <EmptyState
-        title="Connect Your Wallet"
-        description="Connect a Stellar wallet to view your listings, escrows, and transaction history."
-        icon={
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'var(--color-trust-soft)' }}
-          >
-            <Wallet className="w-8 h-8" style={{ color: 'var(--color-trust)' }} />
-          </div>
-        }
-        action={
-          <button
-            onClick={onConnect}
-            className="btn-secondary"
-            id="dashboard-connect-wallet-btn"
-          >
-            <Wallet className="w-4.5 h-4.5" />
-            Connect Wallet
-          </button>
-        }
-      />
+    <div
+      className="container-wide flex flex-col items-center justify-center text-center"
+      style={{ minHeight: '60vh', gap: 'var(--spacing-3)', paddingTop: 'var(--spacing-8)' }}
+    >
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          backgroundColor: 'var(--color-trust-soft)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Wallet style={{ width: 28, height: 28, color: 'var(--color-trust)' }} />
+      </div>
+      <h2 className="type-heading" style={{ color: 'var(--color-ink)' }}>
+        Connect Your Wallet
+      </h2>
+      <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)', maxWidth: '40ch' }}>
+        Connect a Stellar wallet to view your listings, escrows, and transaction history.
+      </p>
+      <button
+        onClick={onConnect}
+        className="btn-primary"
+        id="dashboard-connect-wallet-btn"
+      >
+        <Wallet style={{ width: 16, height: 16 }} />
+        Connect Wallet
+      </button>
     </div>
   );
 }
@@ -107,62 +90,85 @@ function WalletRequiredState({ onConnect }: { onConnect: () => void }) {
 // ─── Install Freighter ────────────────────────────────────────────────────────
 function InstallFreighterState() {
   return (
-    <div className="container-wide py-12">
-      <EmptyState
-        title="Freighter Extension Required"
-        description="The Freighter wallet extension was not detected. Please install it to interact with LumenLock's Soroban contracts."
-        icon={
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: 'var(--color-danger-soft)' }}
-          >
-            <AlertCircle className="w-8 h-8" style={{ color: 'var(--color-danger)' }} />
-          </div>
-        }
-        action={
-          <a
-            href="https://www.freighter.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary"
-          >
-            <Wallet className="w-4 h-4" />
-            Install Freighter Wallet
-          </a>
-        }
-      />
+    <div
+      className="container-wide flex flex-col items-center justify-center text-center"
+      style={{ minHeight: '60vh', gap: 'var(--spacing-3)', paddingTop: 'var(--spacing-8)' }}
+    >
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          backgroundColor: 'var(--color-danger-soft)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AlertCircle style={{ width: 28, height: 28, color: 'var(--color-danger)' }} />
+      </div>
+      <h2 className="type-heading" style={{ color: 'var(--color-ink)' }}>
+        Freighter Extension Required
+      </h2>
+      <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)', maxWidth: '42ch' }}>
+        The Freighter wallet extension was not detected. Please install it to interact with LumenLock&apos;s Soroban contracts.
+      </p>
+      <a
+        href="https://www.freighter.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary"
+      >
+        <Wallet style={{ width: 16, height: 16 }} />
+        Install Freighter Wallet
+      </a>
     </div>
   );
 }
 
-// ─── Stat Row ─────────────────────────────────────────────────────────────────
-function StatItem({
+// ─── Stat Cell ────────────────────────────────────────────────────────────────
+function StatCell({
   label,
   value,
   description,
-  borderRight,
+  icon: Icon,
 }: {
   label: string;
   value: string | number;
   description?: string;
-  borderRight?: boolean;
+  icon?: React.ComponentType<{ style?: React.CSSProperties }>;
 }) {
   return (
-    <div
-      className="flex flex-col p-6"
-      style={{ borderRight: borderRight ? '1px solid var(--color-border)' : undefined }}
-    >
-      <p className="type-caption mb-1" style={{ color: 'var(--color-ink-faint)' }}>
-        {label}
-      </p>
-      <p
-        className="font-semibold mb-0.5"
-        style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '1.75rem', lineHeight: 1.2 }}
+    <div className="ll-card flex flex-col" style={{ padding: 'var(--spacing-3)' }}>
+      {Icon && (
+        <div
+          className="card-slot-marker"
+          style={{ backgroundColor: 'var(--color-surface-raised)', marginBottom: 'var(--spacing-2)' }}
+        >
+          <Icon style={{ width: 18, height: 18, color: 'var(--color-accent)' }} />
+        </div>
+      )}
+      <span
+        style={{
+          color: 'var(--color-ink)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '1.75rem',
+          fontWeight: 600,
+          lineHeight: 1.2,
+          marginBottom: 4,
+          display: 'block',
+        }}
       >
         {value}
+      </span>
+      <p className="type-caption" style={{ color: 'var(--color-ink-faint)' }}>
+        {label}
       </p>
       {description && (
-        <p className="type-caption" style={{ color: 'var(--color-ink-faint)', textTransform: 'none', letterSpacing: 0 }}>
+        <p
+          className="type-body-sm"
+          style={{ color: 'var(--color-ink-faint)', fontSize: '0.75rem', marginTop: 2 }}
+        >
           {description}
         </p>
       )}
@@ -170,43 +176,40 @@ function StatItem({
   );
 }
 
-// ─── Listing Mini-card ────────────────────────────────────────────────────────
+// ─── Listing Row ──────────────────────────────────────────────────────────────
 function MyListingCard({ listing }: { listing: ListingData }) {
   return (
-    <div className="ll-card ll-card-hover p-5">
-      <div className="flex items-start justify-between mb-2">
-        <h3
-          className="font-semibold truncate flex-1 mr-2"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', fontSize: '1rem' }}
-        >
-          {listing.title}
-        </h3>
-        <StatusBadge status={listing.status} />
-      </div>
-      <p
-        className="type-body-sm line-clamp-2 mb-4"
-        style={{ color: 'var(--color-ink-muted)' }}
-      >
-        {listing.description}
-      </p>
-      <div
-        className="flex items-center justify-between pt-3"
-        style={{ borderTop: '1px solid var(--color-border)' }}
-      >
-        <span
-          className="font-semibold"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)', fontSize: '1.05rem' }}
-        >
-          {formatAmount(listing.price)} TOKEN
+    <div className="ll-card ll-card-hover" style={{ padding: 'var(--spacing-2) var(--spacing-3)' }}>
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <h3
+            className="type-body font-semibold truncate"
+            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
+          >
+            {listing.title}
+          </h3>
+          <p className="type-body-sm line-clamp-1" style={{ color: 'var(--color-ink-muted)' }}>
+            {listing.description}
+          </p>
+        </div>
+        <span className="type-mono" style={{ color: 'var(--color-ink)', flexShrink: 0 }}>
+          {formatAmount(listing.price)}
         </span>
+        <StatusBadge status={listing.status} />
         <Link
           href={`/marketplace/${listing.listing_id}`}
-          className="flex items-center gap-1 text-sm font-medium transition-colors"
-          style={{ color: 'var(--color-trust)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+          className="flex items-center gap-1 shrink-0"
+          style={{
+            color: 'var(--color-accent)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-bright)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
         >
-          View <ArrowUpRight className="w-3.5 h-3.5" />
+          View <ArrowUpRight style={{ width: 14, height: 14 }} />
         </Link>
       </div>
     </div>
@@ -240,23 +243,20 @@ function DashboardContent() {
   const completedListings = myListings.filter((l) => l.status === 'Completed');
 
   return (
-    <div className="container-wide py-12">
+    <div className="container-wide" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div
+        className="flex flex-col md:flex-row md:items-end justify-between"
+        style={{ gap: 'var(--spacing-3)', marginBottom: 'var(--spacing-6)' }}
+      >
         <div>
-          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
-            My Account
+          <p className="type-caption" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-1)' }}>
+            MY ACCOUNT
           </p>
-          <h1
-            className="type-display-lg mb-1"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-          >
+          <h1 className="type-display-lg" style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}>
             Dashboard
           </h1>
-          <p
-            className="type-mono-sm"
-            style={{ color: 'var(--color-ink-muted)' }}
-          >
+          <p className="type-mono-sm" style={{ color: 'var(--color-ink-faint)' }}>
             {formatAddress(address!)}
           </p>
         </div>
@@ -265,76 +265,73 @@ function DashboardContent() {
           className="btn-primary w-fit"
           id="dashboard-create-listing-btn"
         >
-          <Plus className="w-4.5 h-4.5" />
+          <Plus style={{ width: 16, height: 16 }} />
           Create Listing
         </Link>
       </div>
 
       {/* Create listing form */}
       {showCreateForm && (
-        <div className="mb-10">
+        <div style={{ marginBottom: 'var(--spacing-6)' }}>
           <CreateListingFormPanel />
         </div>
       )}
 
-      {/* Stats Row */}
+      {/* Stats Grid */}
       <div
-        className="ll-card overflow-hidden mb-10"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+        className="card-grid"
+        style={{
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 'var(--spacing-2)',
+          marginBottom: 'var(--spacing-6)',
+        }}
       >
-        <StatItem
+        <StatCell
           label="Active Listings"
           value={isLoading ? '—' : activeListings.length}
           description="Available for purchase"
-          borderRight
+          icon={Package}
         />
-        <StatItem
+        <StatCell
           label="Completed Sales"
           value={isLoading ? '—' : completedListings.length}
           description="Fully settled"
+          icon={CheckCircle2}
         />
-        <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--color-border)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <StatItem
-            label="Open Escrows"
-            value="—"
-            description="As buyer"
-            borderRight
-          />
-          <StatItem
-            label="Disputes"
-            value="—"
-            description="Pending resolution"
-          />
-        </div>
+        <StatCell
+          label="Open Escrows"
+          value="—"
+          description="As buyer"
+        />
+        <StatCell
+          label="Disputes"
+          value="—"
+          description="Pending resolution"
+        />
       </div>
 
       {/* My Listings */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-5">
-          <h2
-            className="type-heading"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-          >
+      <div style={{ marginBottom: 'var(--spacing-6)' }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 'var(--spacing-3)' }}>
+          <h2 className="type-heading" style={{ color: 'var(--color-ink)' }}>
             My Listings
           </h2>
           <Link
             href="/marketplace"
-            className="flex items-center gap-1 text-sm font-medium transition-colors"
-            style={{ color: 'var(--color-trust)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-trust-hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-trust)')}
+            className="flex items-center gap-1"
+            style={{ color: 'var(--color-accent)', fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-accent-bright)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-accent)')}
           >
-            View All <ArrowUpRight className="w-3.5 h-3.5" />
+            View All <ArrowUpRight style={{ width: 14, height: 14 }} />
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)' }}>
             {[1, 2, 3].map((i) => (
-              <div key={i} className="ll-card p-5 space-y-3">
+              <div key={i} className="ll-card" style={{ padding: 'var(--spacing-2) var(--spacing-3)' }}>
                 <Skeleton height={16} width="75%" />
-                <Skeleton height={12} width="50%" />
-                <Skeleton height={10} width="88%" />
               </div>
             ))}
           </div>
@@ -344,16 +341,13 @@ function DashboardContent() {
             description="You haven't created any listings. Post your first item for sale."
             action={
               <Link href="/marketplace?action=create" className="btn-primary">
-                <Plus className="w-4.5 h-4.5" />
+                <Plus style={{ width: 16, height: 16 }} />
                 Create Your First Listing
               </Link>
             }
           />
         ) : (
-          <div
-            className="card-grid my-listings-grid"
-            style={{ gap: 'var(--spacing-2)' }}
-          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-1)' }}>
             {myListings.map((listing) => (
               <MyListingCard key={listing.listing_id.toString()} listing={listing} />
             ))}
@@ -361,12 +355,9 @@ function DashboardContent() {
         )}
       </div>
 
-      {/* Quick Links */}
-      <div>
-        <h2
-          className="type-heading mb-5"
-          style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-        >
+      {/* Quick Actions */}
+      <div style={{ marginTop: 'var(--spacing-6)' }}>
+        <h2 className="type-heading" style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-3)' }}>
           Quick Actions
         </h2>
         <div className="card-grid quick-actions-grid" style={{ gap: 'var(--spacing-2)' }}>
@@ -393,24 +384,17 @@ function DashboardContent() {
             <Link
               key={href}
               href={href}
-              className="ll-card ll-card-trust-hover flex flex-col group"
-              style={{ padding: 'var(--spacing-3)', textDecoration: 'none' }}
+              className="ll-card ll-card-trust-hover flex flex-col"
+              style={{ padding: 'var(--spacing-3)', textDecoration: 'none', gap: 'var(--spacing-2)' }}
             >
-              {/*
-               * card-slot-marker: fixed 44px icon slot.
-               * card-slot-title: min-height so all 3 labels start at same y.
-               */}
               <div
-                className="card-slot-marker mb-3"
-                style={{ backgroundColor: 'var(--color-trust-soft)', color: 'var(--color-trust)' }}
+                className="card-slot-marker"
+                style={{ backgroundColor: 'var(--color-surface-raised)', color: 'var(--color-accent)' }}
               >
                 <Icon style={{ width: 18, height: 18 }} />
               </div>
               <div className="card-slot-title">
-                <h3
-                  className="font-semibold"
-                  style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-ui)' }}
-                >
+                <h3 className="type-heading" style={{ color: 'var(--color-ink)', fontSize: '1rem' }}>
                   {label}
                 </h3>
               </div>

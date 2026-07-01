@@ -23,36 +23,26 @@ function getTokenSymbol(assetAddress: string): string {
   return 'TOKEN';
 }
 
-// ─── Listing Card ─────────────────────────────────────────────────────────────
+// ─── Listing Card ──────────────────────────────────────────────────────────────
 function ListingCard({ listing }: { listing: ListingData }) {
   const tokenSymbol = getTokenSymbol(listing.asset);
   const hasMilestones = !!listing.milestone_config;
-  const priceDisplay = `${formatAmount(listing.price)} ${tokenSymbol}`;
+  const priceDisplay = formatAmount(listing.price);
 
   return (
     <div
-      className="ll-card ll-card-hover flex flex-col gap-4 group"
-      style={{ cursor: 'default', padding: 'var(--spacing-3)' }}
+      className="ll-card ll-card-hover flex flex-col"
+      style={{ padding: 'var(--spacing-3)', gap: 'var(--spacing-2)', cursor: 'default' }}
     >
-      {/* Header row: title + badges */}
+      {/* Header: title + badges */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3
-            className="font-semibold truncate mb-1 transition-colors"
-            style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--color-ink)',
-              fontSize: '1.05rem',
-            }}
-          >
+          <h3 className="type-heading truncate" style={{ color: 'var(--color-ink)' }}>
             {listing.title}
           </h3>
-          <div className="flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5" style={{ color: 'var(--color-ink-faint)' }} />
-            <span
-              className="text-xs"
-              style={{ color: 'var(--color-ink-faint)', fontFamily: 'var(--font-mono)' }}
-            >
+          <div className="flex items-center gap-1.5 mt-1">
+            <User style={{ width: 13, height: 13, color: 'var(--color-ink-faint)', flexShrink: 0 }} />
+            <span className="type-mono-sm" style={{ color: 'var(--color-ink-faint)' }}>
               {formatAddress(listing.seller)}
             </span>
           </div>
@@ -65,10 +55,9 @@ function ListingCard({ listing }: { listing: ListingData }) {
               style={{
                 backgroundColor: 'var(--color-trust-soft)',
                 color: 'var(--color-trust)',
-                border: '1px solid rgba(43,58,143,0.15)',
               }}
             >
-              <Milestone className="w-3 h-3" />
+              <Milestone style={{ width: 11, height: 11 }} />
               Milestones
             </span>
           )}
@@ -77,7 +66,7 @@ function ListingCard({ listing }: { listing: ListingData }) {
 
       {/* Description */}
       <p
-        className="type-body-sm line-clamp-2 leading-relaxed flex-1"
+        className="type-body-sm line-clamp-2 flex-1"
         style={{ color: 'var(--color-ink-muted)' }}
       >
         {listing.description}
@@ -85,28 +74,25 @@ function ListingCard({ listing }: { listing: ListingData }) {
 
       {/* Footer: price + CTA */}
       <div
-        className="flex items-center justify-between pt-4"
-        style={{ borderTop: '1px solid var(--color-border)' }}
+        className="flex items-center justify-between"
+        style={{ paddingTop: 'var(--spacing-2)', borderTop: '1px solid var(--color-border)', marginTop: 'auto' }}
       >
         <div>
-          <p className="type-caption mb-0.5" style={{ color: 'var(--color-ink-faint)' }}>
+          <p className="type-caption" style={{ color: 'var(--color-ink-faint)', marginBottom: 4 }}>
             Price
           </p>
-          <p
-            className="font-semibold text-xl"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-mono)' }}
-          >
-            {priceDisplay}
+          <p className="type-mono" style={{ color: 'var(--color-ink)' }}>
+            {priceDisplay}{' '}
+            <span style={{ color: 'var(--color-accent)' }}>{tokenSymbol}</span>
           </p>
         </div>
         {listing.status === 'Active' && (
           <Link
             href={`/marketplace/${listing.listing_id}`}
             className="btn-primary"
-            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+            style={{ padding: '8px 18px', fontSize: '0.875rem' }}
           >
-            Buy Now
-            <ArrowRight className="w-4 h-4" />
+            Buy Now →
           </Link>
         )}
       </div>
@@ -117,27 +103,27 @@ function ListingCard({ listing }: { listing: ListingData }) {
 // ─── Skeleton Card ────────────────────────────────────────────────────────────
 function ListingCardSkeleton() {
   return (
-    <div className="ll-card p-6 space-y-4">
+    <div className="ll-card flex flex-col" style={{ padding: 'var(--spacing-3)', gap: 'var(--spacing-2)' }}>
       <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-2">
+        <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Skeleton height={20} width="75%" />
           <Skeleton height={14} width="45%" />
         </div>
         <Skeleton height={22} width={64} style={{ borderRadius: 9999 }} />
       </div>
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <Skeleton height={14} width="100%" />
         <Skeleton height={14} width="80%" />
       </div>
       <div
-        className="pt-4 flex items-center justify-between"
-        style={{ borderTop: '1px solid var(--color-surface-sunken)' }}
+        className="flex items-center justify-between"
+        style={{ paddingTop: 'var(--spacing-2)', borderTop: '1px solid var(--color-border)' }}
       >
-        <div className="space-y-1">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <Skeleton height={10} width={36} />
           <Skeleton height={24} width={80} />
         </div>
-        <Skeleton height={36} width={90} style={{ borderRadius: 8 }} />
+        <Skeleton height={36} width={90} style={{ borderRadius: 9999 }} />
       </div>
     </div>
   );
@@ -158,29 +144,31 @@ export default function MarketplacePage() {
     return matchesSearch && matchesStatus;
   });
 
+  const filterLabels: Array<{ value: 'all' | 'Active' | 'Locked' | 'Completed'; label: string }> = [
+    { value: 'all',       label: 'All' },
+    { value: 'Active',    label: 'Active' },
+    { value: 'Locked',    label: 'Locked' },
+    { value: 'Completed', label: 'Completed' },
+  ];
+
   return (
-    <div className="container-wide py-12">
+    <div className="container-wide" style={{ paddingTop: 'var(--spacing-8)', paddingBottom: 'var(--spacing-8)' }}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between" style={{ gap: 'var(--spacing-3)', marginBottom: 'var(--spacing-4)' }}>
         <div>
-          <p className="type-caption mb-2" style={{ color: 'var(--color-accent)' }}>
-            P2P Exchange
+          <p className="type-caption" style={{ color: 'var(--color-accent)', marginBottom: 'var(--spacing-1)' }}>
+            P2P EXCHANGE
           </p>
-          <h1
-            className="type-display-lg"
-            style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)' }}
-          >
+          <h1 className="type-display-lg" style={{ color: 'var(--color-ink)', marginBottom: 'var(--spacing-1)' }}>
             Marketplace
           </h1>
-          <div style={{ marginTop: 'var(--stack-xs)' }}>
-            {isLoading ? (
-              <Skeleton height={16} width={180} />
-            ) : (
-              <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
-                {listings?.length ?? 0} listing{listings?.length !== 1 ? 's' : ''} — all backed by Soroban escrow
-              </p>
-            )}
-          </div>
+          {isLoading ? (
+            <Skeleton height={16} width={180} />
+          ) : (
+            <p className="type-body-sm" style={{ color: 'var(--color-ink-muted)' }}>
+              {listings?.length ?? 0} listing{listings?.length !== 1 ? 's' : ''} — all backed by Soroban escrow
+            </p>
+          )}
         </div>
         {isConnected && (
           <Link
@@ -188,73 +176,76 @@ export default function MarketplacePage() {
             className="btn-primary w-fit"
             id="create-listing-btn"
           >
-            <Plus className="w-4.5 h-4.5" />
+            <Plus style={{ width: 16, height: 16 }} />
             Create Listing
           </Link>
         )}
       </div>
 
-      {/* Search + Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] shrink-0 pointer-events-none"
-            style={{ color: 'var(--color-ink-faint)' }}
-          />
-          <input
-            type="text"
-            placeholder="Search listings…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="ll-input"
-            style={{ paddingLeft: '2.375rem' }}
-            aria-label="Search marketplace listings"
-            id="marketplace-search"
-          />
-        </div>
+      {/* Search */}
+      <div className="relative" style={{ marginBottom: 'var(--spacing-2)' }}>
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none shrink-0"
+          style={{ width: 18, height: 18, color: 'var(--color-ink-faint)' }}
+        />
+        <input
+          type="text"
+          placeholder="Search listings…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="ll-input"
+          style={{ paddingLeft: '2.5rem' }}
+          aria-label="Search marketplace listings"
+          id="marketplace-search"
+        />
+      </div>
 
-        {/* Status filter chips */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {(['all', 'Active', 'Locked', 'Completed'] as const).map((s) => (
+      {/* Filter tabs */}
+      <div
+        className="flex flex-wrap items-center"
+        style={{ gap: 'var(--spacing-1)', marginBottom: 'var(--spacing-4)' }}
+      >
+        {filterLabels.map(({ value, label }) => {
+          const active = statusFilter === value;
+          return (
             <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
+              key={value}
+              onClick={() => setStatusFilter(value)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                padding: '8px 16px',       /* explicit — never let height vary */
+                padding: '6px 16px',
                 whiteSpace: 'nowrap',
-                borderRadius: '8px',
+                borderRadius: 'var(--radius-pill)',
                 fontSize: '0.875rem',
                 fontWeight: 500,
                 fontFamily: 'var(--font-ui)',
-                border: `1px solid ${statusFilter === s ? 'rgba(43,58,143,0.25)' : 'var(--color-border)'}`,
-                backgroundColor: statusFilter === s ? 'var(--color-trust-soft)' : 'var(--color-surface)',
-                color: statusFilter === s ? 'var(--color-trust)' : 'var(--color-ink-muted)',
+                border: `1px solid ${active ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
+                backgroundColor: active ? 'var(--color-accent-soft)' : 'transparent',
+                color: active ? 'var(--color-accent)' : 'var(--color-ink-muted)',
                 transition: 'all 150ms',
                 cursor: 'pointer',
               }}
             >
-              {s === 'all' ? 'All' : s}
+              {label}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Content states */}
+      {/* Content */}
       {isLoading ? (
-        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-3)' }}>
+        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-2)' }}>
           {[...Array(6)].map((_, i) => <ListingCardSkeleton key={i} />)}
         </div>
       ) : error ? (
         <ErrorState
           title="Couldn't load listings"
-          message={error instanceof Error ? error.message : "Check your connection and try again."}
+          message={error instanceof Error ? error.message : 'Check your connection and try again.'}
           onRetry={() => refetch()}
         />
       ) : filtered && filtered.length > 0 ? (
-        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-3)' }}>
+        <div className="card-grid marketplace-listing-grid" style={{ gap: 'var(--spacing-2)' }}>
           {filtered.map((listing) => (
             <ListingCard key={listing.listing_id.toString()} listing={listing} />
           ))}
@@ -272,14 +263,11 @@ export default function MarketplacePage() {
           action={
             isConnected && !searchQuery ? (
               <Link href="/dashboard?action=create" className="btn-primary" id="marketplace-create-first-btn">
-                <Plus className="w-4.5 h-4.5" />
+                <Plus style={{ width: 16, height: 16 }} />
                 Create Listing
               </Link>
             ) : searchQuery ? (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="btn-ghost"
-              >
+              <button onClick={() => setSearchQuery('')} className="btn-ghost">
                 Clear search
               </button>
             ) : undefined
